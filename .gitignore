@@ -1,12 +1,45 @@
-﻿node_modules/
+﻿# dependencies
+node_modules/
 .npm-cache/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# next.js
 .next/
+out/
+
+# testing
+coverage/
+
+# misc
+.DS_Store
+*.pem
+.agents/
+.tmp-sites-init/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env
+.env*
+
+# vercel
+.vercel
+
+# typescript
+next-env.d.ts
+
+# leftover local tooling
 .vinext/
 dist/
 .wrangler/
 outputs/
 work/
-.env*
-.DS_Store
-.agents/
-.tmp-sites-init/
