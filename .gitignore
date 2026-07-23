@@ -1,0 +1,12 @@
+﻿node_modules/
+.npm-cache/
+.next/
+.vinext/
+dist/
+.wrangler/
+outputs/
+work/
+.env*
+.DS_Store
+.agents/
+.tmp-sites-init/
