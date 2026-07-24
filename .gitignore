@@ -16,6 +16,9 @@ out/
 # testing
 coverage/
 .venv/
+.pytest_cache/
+**/__pycache__/
+*.py[cod]
 
 # misc
 .DS_Store
