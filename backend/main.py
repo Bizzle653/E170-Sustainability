@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,9 +16,20 @@ app = FastAPI(
     version="0.1.0",
     description="Educational sustainable-investing portfolio simulation.",
 )
+
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://e170-sustaniability-dogi.vercel.app",
+]
+configured_origins = [
+    origin.strip()
+    for origin in os.getenv("GREEN_CANOPY_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=list(dict.fromkeys(default_origins + configured_origins)),
     allow_methods=["*"],
     allow_headers=["*"],
 )

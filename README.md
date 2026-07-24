@@ -73,6 +73,24 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
+## Deploy on Vercel
+
+The repository includes `api/backend.py`, which exposes the existing FastAPI application as a Vercel Python Function. Vercel rewrites public `/api/...` requests to that function while preserving the API path. In production the frontend uses same-origin requests, so it does not need `NEXT_PUBLIC_API_URL`.
+
+Deploy the repository as one Vercel project:
+
+```powershell
+vercel --prod
+```
+
+Do not set `NEXT_PUBLIC_API_URL` to `localhost` in Vercel. If that variable already exists in the Vercel project, remove it and redeploy. It is only needed when the frontend and backend intentionally use different hosts.
+
+Additional direct frontend origins can be allowed with a comma-separated server-side environment variable:
+
+```text
+GREEN_CANOPY_ALLOWED_ORIGINS=https://example.com,https://preview.example.com
+```
+
 ## Tests and production build
 
 ```powershell
@@ -101,3 +119,7 @@ Yahoo sustainability fields are third-party ESG-risk information, not proof that
 Missing sustainability values remain unavailable; they are never replaced with zero or fabricated scores. Stock candidates without required Yahoo sustainability data are normally excluded. ETFs may remain for diversification using clearly labeled Green Canopy classification metadata, but their confidence is reduced and the limitation appears in the result.
 
 Category tags in `investment_universe.json` are Green Canopy classification metadata, not third-party ESG facts. Historical performance is descriptive and does not guarantee future results.
+
+## Appropriate use of generative AI
+
+The current investment selection and allocation are deterministic; no language model chooses securities or invents sustainability evidence. A future generative-AI layer could explain the completed structured result in more accessible language, answer questions about why holdings were selected, or summarize trade-offs. It should receive only the calculated profile, allocations, metrics, and limitations, and it must never replace the optimizer, create missing ESG values, or present generated text as financial advice.

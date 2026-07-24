@@ -28,6 +28,20 @@ def test_health_and_profile_response_validation():
     assert response.json()["profile_name"]
 
 
+def test_production_origin_cors_preflight():
+    client = TestClient(main_module.app)
+    response = client.options(
+        "/api/portfolio/generate",
+        headers={
+            "Origin": "https://e170-sustaniability-dogi.vercel.app",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://e170-sustaniability-dogi.vercel.app"
+
+
 def test_portfolio_api_totals_exclusions_and_schema(monkeypatch):
     monkeypatch.setattr(main_module, "market_data", FakeMarket())
     client = TestClient(main_module.app)
