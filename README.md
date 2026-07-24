@@ -102,9 +102,20 @@ npm run build
 
 - `GET /api/health`
 - `GET /api/universe`
+- `GET /api/universe/search?q=microsoft`
 - `GET /api/company/{ticker}`
+- `POST /api/company/analyze`
 - `POST /api/profile`
 - `POST /api/portfolio/generate`
+- `POST /api/portfolio/quotes`
+
+## Portfolio dashboard
+
+Generated portfolios are saved on the current device and can be opened at
+`/portfolio`. The dashboard tracks simulated returns, searches the local company
+universe without a market-data request, and requires a full company review
+before a user-directed reallocation. This MVP does not execute trades or sync
+portfolios between devices.
 
 ## How yfinance is used
 

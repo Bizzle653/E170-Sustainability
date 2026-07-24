@@ -113,7 +113,8 @@ export default function Home() {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail || "Portfolio generation failed");
-      sessionStorage.setItem("greenCanopyPortfolio", JSON.stringify(payload));
+      localStorage.setItem("greenCanopyPortfolio", JSON.stringify(payload));
+      localStorage.removeItem("greenCanopyQuotes");
       router.push("/results");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "We could not build the portfolio.");

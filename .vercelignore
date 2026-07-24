@@ -1,0 +1,10 @@
+.git
+.next
+.pytest_cache
+.tmp-sites-init
+.venv
+node_modules
+backend/tests
+__pycache__
+*.pyc
+tsconfig.tsbuildinfo

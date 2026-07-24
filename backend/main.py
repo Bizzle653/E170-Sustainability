@@ -5,10 +5,22 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.models import CompanyResponse, InvestorProfile, PortfolioRequest, PortfolioResponse, ProfileRequest
+from backend.models import (
+    CompanyAnalysisRequest,
+    CompanyAnalysisResponse,
+    CompanyResponse,
+    InvestorProfile,
+    PortfolioRequest,
+    PortfolioResponse,
+    ProfileRequest,
+    QuoteItem,
+    QuoteRequest,
+    QuoteResponse,
+)
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService
 from backend.services.portfolio import generate_portfolio, load_universe
+from backend.services.sustainability import alignment_score
 
 
 app = FastAPI(
@@ -55,12 +67,94 @@ def universe() -> dict[str, object]:
     }
 
 
+@app.get("/api/universe/search")
+def search_universe(q: str = "", limit: int = 10) -> dict[str, object]:
+    query = q.strip().lower()
+    if len(query) < 1:
+        return {"results": []}
+    limit = max(1, min(limit, 20))
+    results = []
+    for item in load_universe()["securities"]:
+        if item["type"] != "stock":
+            continue
+        ticker = item["ticker"].lower()
+        name = item.get("name", "").lower()
+        if query not in ticker and query not in name:
+            continue
+        results.append({
+            "ticker": item["ticker"],
+            "name": item.get("name") or item["ticker"],
+            "sector": item.get("sector") or "Unclassified",
+            "industry": item.get("industry"),
+        })
+    results.sort(key=lambda item: (
+        not item["ticker"].lower().startswith(query),
+        not item["name"].lower().startswith(query),
+        item["name"],
+    ))
+    return {"results": results[:limit]}
+
+
 @app.get("/api/company/{ticker}", response_model=CompanyResponse)
 def company(ticker: str) -> CompanyResponse:
     try:
         return market_data.company(ticker)
     except MarketDataError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/company/analyze", response_model=CompanyAnalysisResponse)
+def analyze_company(request: CompanyAnalysisRequest) -> CompanyAnalysisResponse:
+    symbol = request.ticker.upper().strip()
+    item = next(
+        (security for security in load_universe()["securities"] if security["ticker"].upper() == symbol),
+        None,
+    )
+    if not item or item["type"] != "stock":
+        raise HTTPException(status_code=404, detail="Company is not in the Green Canopy Fortune 1000 universe")
+    try:
+        company_data = market_data.company(symbol)
+        info = market_data.get_info(symbol)
+        sustainability = market_data.get_sustainability(symbol)
+    except MarketDataError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    assessment = alignment_score(request.profile, item.get("tags", []), sustainability, "stock")
+    return CompanyAnalysisResponse(
+        **company_data.model_dump(),
+        description=info.get("longBusinessSummary"),
+        market_cap=info.get("marketCap"),
+        green_canopy_score=assessment["alignment_score"],
+        green_canopy_confidence=assessment["confidence"],
+        matched_priorities=assessment["matched_priorities"],
+        assessment_limitations=assessment["limitations"],
+    )
+
+
+@app.post("/api/portfolio/quotes", response_model=QuoteResponse)
+def portfolio_quotes(request: QuoteRequest) -> QuoteResponse:
+    quotes: list[QuoteItem] = []
+    for raw_symbol in dict.fromkeys(request.tickers):
+        symbol = raw_symbol.upper().strip()
+        if not symbol or len(symbol) > 10:
+            continue
+        try:
+            info = market_data.get_info(symbol)
+        except MarketDataError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        price = info.get("currentPrice") or info.get("regularMarketPrice")
+        if price is None:
+            try:
+                price = float(market_data.get_history(symbol).iloc[-1])
+            except MarketDataError as exc:
+                raise HTTPException(status_code=503, detail=str(exc)) from exc
+        quotes.append(QuoteItem(
+            ticker=symbol,
+            current_price=float(price),
+            retrieved_at=market_data._timestamp(),
+        ))
+    if not quotes:
+        raise HTTPException(status_code=400, detail="No valid tickers supplied")
+    return QuoteResponse(quotes=quotes)
 
 
 @app.post("/api/profile", response_model=InvestorProfile)

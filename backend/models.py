@@ -83,6 +83,36 @@ class CompanyResponse(BaseModel):
     sources: list[str]
 
 
+class CompanyAnalysisRequest(BaseModel):
+    ticker: str = Field(min_length=1, max_length=10)
+    profile: InvestorProfile
+
+
+class CompanyAnalysisResponse(CompanyResponse):
+    description: str | None = None
+    market_cap: float | None = None
+    green_canopy_score: float
+    green_canopy_confidence: Literal["low", "medium", "high"]
+    matched_priorities: list[str]
+    assessment_limitations: list[str]
+
+
+class QuoteRequest(BaseModel):
+    tickers: list[str] = Field(min_length=1, max_length=20)
+
+
+class QuoteItem(BaseModel):
+    ticker: str
+    current_price: float
+    retrieved_at: str
+
+
+class QuoteResponse(BaseModel):
+    quotes: list[QuoteItem]
+    cache_seconds: int = 900
+    source: str = "Yahoo Finance via yfinance"
+
+
 class Allocation(BaseModel):
     ticker: str
     name: str
@@ -90,6 +120,8 @@ class Allocation(BaseModel):
     sector: str
     weight: float
     dollar_amount: float
+    purchase_price: float
+    shares: float
     alignment_score: float
     confidence: Literal["low", "medium", "high"]
     matched_priorities: list[str]

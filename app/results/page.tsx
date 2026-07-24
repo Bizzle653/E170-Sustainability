@@ -5,7 +5,7 @@ import { useMemo, useSyncExternalStore } from "react";
 
 type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
-  dollar_amount: number; alignment_score: number; confidence: string;
+  dollar_amount: number; purchase_price: number; shares: number; alignment_score: number; confidence: string;
   matched_priorities: string[]; why_selected: string; sustainability_status: string;
 };
 type Portfolio = {
@@ -22,7 +22,7 @@ const money = (value: number) => value.toLocaleString("en-US", {style: "currency
 export default function ResultsPage() {
   const stored = useSyncExternalStore(
     () => () => undefined,
-    () => sessionStorage.getItem("greenCanopyPortfolio"),
+    () => localStorage.getItem("greenCanopyPortfolio") ?? sessionStorage.getItem("greenCanopyPortfolio"),
     () => null,
   );
   const portfolio = useMemo<Portfolio | null>(() => stored ? JSON.parse(stored) : null, [stored]);
@@ -31,7 +31,7 @@ export default function ResultsPage() {
 
   const topPriorities = Object.entries(portfolio.investor_profile.sustainability_priority_weights).filter(([, weight]) => weight > 0).sort((a,b) => b[1]-a[1]).map(([key]) => key.replaceAll("_"," "));
   return <main className="resultsPage">
-    <nav className="resultsNav"><Link className="brand" href="/"><span className="brandMark">⌁</span><span>Green Canopy</span></Link><Link className="button buttonSmall" href="/">Build another</Link></nav>
+    <nav className="resultsNav"><Link className="brand" href="/portfolio"><span className="brandMark">⌁</span><span>Green Canopy</span></Link><div className="navActions"><Link className="backButton navButton" href="/">Generate another</Link><Link className="button buttonSmall" href="/portfolio">Take me home</Link></div></nav>
     <header className="resultsHero"><div><span className="eyebrow">Your Green Canopy portfolio</span><h1>{portfolio.investor_profile.profile_name}</h1><p>{portfolio.investor_profile.profile_description} Your strongest priorities were {topPriorities.join(", ")}.</p></div><div className="heroScore"><span>Alignment</span><strong>{portfolio.sustainability_alignment_score}</strong><small>Green Canopy score · not “percent sustainable”</small></div></header>
     <section className="metricGrid">
       <Metric label="Investment" value={money(portfolio.total_investment_amount)} note="Illustrative amount" />

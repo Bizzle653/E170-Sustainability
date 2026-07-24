@@ -124,6 +124,8 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             sector=item["sector"],
             weight=percent,
             dollar_amount=dollars_value,
+            purchase_price=round(float(item["history"].iloc[-1]), 4),
+            shares=round(dollars_value / float(item["history"].iloc[-1]), 8),
             alignment_score=item["alignment"]["alignment_score"],
             confidence=item["alignment"]["confidence"],
             matched_priorities=matched,
