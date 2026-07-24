@@ -1,224 +1,201 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type Answers = {
   priorities: string[];
   goal: string;
   horizon: string;
   risk: string;
+  decline_reaction: string;
+  philosophy: string;
+  tradeoff: string;
+  exclusions: string[];
+  max_concentration: number;
   amount: number;
 };
 
-const priorityOptions = [
-  ["Climate", "Lower carbon emissions"],
-  ["Clean energy", "Renewables and storage"],
-  ["Fair work", "Labor and human rights"],
-  ["Nature", "Biodiversity protection"],
-  ["Water", "Access and efficiency"],
-  ["Circularity", "Waste and materials"],
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const priorities = [
+  ["climate", "Climate", "Lower carbon emissions"],
+  ["renewable_energy", "Clean energy", "Renewables and storage"],
+  ["fair_labor", "Fair work", "Labor rights and safe workplaces"],
+  ["human_rights", "Human rights", "Forced-labor avoidance"],
+  ["biodiversity", "Nature", "Biodiversity and ecosystems"],
+  ["clean_water", "Water", "Access, quality, and efficiency"],
+  ["sustainable_agriculture", "Agriculture", "Resilient food systems"],
+  ["circular_economy", "Circularity", "Waste and materials"],
+  ["governance", "Governance", "Leadership and accountability"],
 ];
-
+const exclusions = [
+  ["fossil_fuels", "Fossil fuels"],
+  ["tobacco", "Tobacco"],
+  ["weapons", "Weapons"],
+  ["gambling", "Gambling"],
+  ["severe_labor_controversies", "Severe labor controversies"],
+  ["severe_environmental_controversies", "Severe environmental controversies"],
+];
 const steps = [
-  { eyebrow: "Your values", title: "What matters most to you?", copy: "Choose up to three themes. We’ll use them as the strongest sustainability weights in your portfolio." },
-  { eyebrow: "Your objective", title: "What is this money for?", copy: "Your goal helps us balance long-term growth, stability, and income." },
-  { eyebrow: "Your timeline", title: "When might you need this money?", copy: "A longer runway can support more exposure to market movement." },
-  { eyebrow: "Your comfort level", title: "How do you feel about market swings?", copy: "Choose the answer that best reflects how you would react during a difficult year." },
-  { eyebrow: "Starting amount", title: "How much would you like to invest?", copy: "This illustrative amount determines the dollar allocation in your sample portfolio." },
+  ["Your values", "What matters most to you?", "Choose up to three priorities. Order matters: your first choice receives the strongest weight."],
+  ["Your philosophy", "How should your money create change?", "Tell us whether you prefer avoiding harm, funding solutions, or backing leaders and transitioners."],
+  ["Your boundaries", "What should your portfolio avoid?", "Explicit exclusions are treated as constraints, not suggestions."],
+  ["Your objective", "What is this money for?", "Your goal helps balance long-term growth, stability, and income."],
+  ["Your timeline", "When might you need this money?", "A longer runway can support more exposure to market movement."],
+  ["Your comfort level", "How would you handle a difficult year?", "Your response to a hypothetical 20% decline shapes the risk penalty."],
+  ["Starting amount", "How much would you like to invest?", "This illustrative amount determines the dollar allocation in your simulated portfolio."],
+];
+const loadingStages = [
+  "Building your investor profile",
+  "Retrieving company data",
+  "Checking sustainability alignment",
+  "Evaluating financial risk",
+  "Optimizing your portfolio",
+  "Preparing your results",
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [complete, setComplete] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
+  const [error, setError] = useState("");
   const [answers, setAnswers] = useState<Answers>({
-    priorities: ["Climate", "Nature"],
-    goal: "Long-term growth",
-    horizon: "10+ years",
-    risk: "Stay invested",
+    priorities: ["climate", "biodiversity"],
+    goal: "long_term_growth",
+    horizon: "10_plus_years",
+    risk: "stay_invested",
+    decline_reaction: "hold",
+    philosophy: "combination",
+    tradeoff: "small",
+    exclusions: ["fossil_fuels"],
+    max_concentration: 0.2,
     amount: 10000,
   });
 
-  const riskLabel = answers.risk === "Invest more" ? "Growth" : answers.risk === "Move to safety" ? "Cautious" : "Balanced";
-  const holdings = useMemo(() => {
-    const themes = answers.priorities.length ? answers.priorities : ["Climate"];
-    const thematic = riskLabel === "Growth" ? 58 : riskLabel === "Cautious" ? 38 : 48;
-    return [
-      { name: `${themes[0]} Leaders`, description: "High-alignment global companies", percent: Math.round(thematic * 0.58) },
-      { name: `${themes[1] ?? "Clean energy"} Solutions`, description: "Companies building measurable solutions", percent: Math.round(thematic * 0.42) },
-      { name: "Sustainable Market Core", description: "Broad screened diversification", percent: riskLabel === "Growth" ? 32 : 37 },
-      { name: "Green Bond Reserve", description: "Stability and climate-linked income", percent: riskLabel === "Growth" ? 10 : riskLabel === "Cautious" ? 25 : 15 },
-    ];
-  }, [answers.priorities, riskLabel]);
-
-  function startBuilder() {
-    setBuilderOpen(true);
-    setComplete(false);
-    setStep(0);
-  }
-
-  function next() {
-    if (step === steps.length - 1) setComplete(true);
-    else setStep((value) => value + 1);
-  }
-
-  function togglePriority(value: string) {
+  function toggleList(field: "priorities" | "exclusions", value: string, limit = 99) {
     setAnswers((current) => {
-      const selected = current.priorities.includes(value);
-      const priorities = selected
-        ? current.priorities.filter((item) => item !== value)
-        : current.priorities.length < 3
-          ? [...current.priorities, value]
-          : current.priorities;
-      return { ...current, priorities };
+      const values = current[field];
+      return {
+        ...current,
+        [field]: values.includes(value) ? values.filter((item) => item !== value) : values.length < limit ? [...values, value] : values,
+      };
     });
+  }
+
+  async function generate() {
+    setLoading(true);
+    setError("");
+    setLoadingStage(0);
+    const timer = window.setInterval(() => setLoadingStage((value) => Math.min(value + 1, loadingStages.length - 1)), 1500);
+    try {
+      const response = await fetch(`${API_URL}/api/portfolio/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          investment_amount: answers.amount,
+          number_of_holdings: 8,
+          answers: {
+            priorities: answers.priorities,
+            goal: answers.goal,
+            horizon: answers.horizon,
+            risk: answers.risk,
+            decline_reaction: answers.decline_reaction,
+            philosophy: answers.philosophy,
+            tradeoff: answers.tradeoff,
+            exclusions: answers.exclusions,
+            max_concentration: answers.max_concentration,
+          },
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || "Portfolio generation failed");
+      sessionStorage.setItem("greenCanopyPortfolio", JSON.stringify(payload));
+      router.push("/results");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "We could not build the portfolio.");
+      setLoading(false);
+    } finally {
+      window.clearInterval(timer);
+    }
   }
 
   return (
     <main>
-      <header className="nav">
-        <a className="brand" href="#top" aria-label="Green Canopy home">
-          <span className="brandMark">⌁</span>
-          <span>Green Canopy</span>
-        </a>
-        <nav className="navLinks" aria-label="Primary navigation">
-          <a href="#how">How it works</a>
-          <a href="#approach">Our approach</a>
-          <a href="#impact">Impact</a>
-        </nav>
-        <button className="button buttonSmall" onClick={startBuilder}>Get started</button>
-      </header>
+      <nav className="nav">
+        <a className="brand" href="#"><span className="brandMark">⌁</span><span>Green Canopy</span></a>
+        <div className="navLinks"><a href="#how">How it works</a><a href="#approach">Our approach</a><a href="#impact">Transparency</a></div>
+        <button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button>
+      </nav>
 
-      <section className="hero" id="top">
+      <section className="hero">
         <div className="heroShade" />
         <div className="heroContent">
-          <span className="eyebrow">Personalized sustainable investing</span>
+          <span className="eyebrow">Sustainable investing, made personal</span>
           <h1>Invest with purpose.<br />Grow a better future.</h1>
-          <p>Build a diversified portfolio that reflects your values, financial goals, and appetite for risk—without reducing sustainability to a single score.</p>
-          <div className="heroActions">
-            <button className="button" onClick={startBuilder}>Build your portfolio <span>→</span></button>
-            <a className="textLink" href="#how">See how it works</a>
-          </div>
-          <div className="trustLine">
-            <span>✓ Personalized</span><span>✓ Sustainability-led</span><span>✓ Risk-aware</span>
-          </div>
+          <p>Build an educational portfolio simulation around the causes you care about—without losing sight of diversification, historical risk, and your financial goals.</p>
+          <div className="heroActions"><button className="button" onClick={() => setBuilderOpen(true)}>Get started <span>→</span></button><a className="textLink" href="#how">See how it works</a></div>
+          <div className="trustLine"><span>✓ No brokerage connection</span><span>✓ Transparent scoring</span><span>✓ Educational simulation</span></div>
         </div>
       </section>
 
       <section className="section" id="how">
-        <div className="sectionIntro centered">
-          <span className="eyebrow">How it works</span>
-          <h2>A portfolio designed around you.</h2>
-          <p>Thoughtful questions become a practical, transparent investment strategy.</p>
-        </div>
+        <div className="sectionIntro centered"><span className="eyebrow">A clearer path</span><h2>From your values to a portfolio you understand.</h2><p>Green Canopy combines a deterministic investor profile, current provider data, and constrained optimization. Every result explains what is known—and what is missing.</p></div>
         <div className="steps">
           {[
-            ["01", "Tell us what matters", "Share your values, goals, time horizon, and comfort with risk."],
-            ["02", "We build your profile", "Your answers become clear sustainability and financial preferences."],
-            ["03", "Grow with impact", "See an illustrative allocation and the reasoning behind every choice."],
-          ].map(([number, title, copy]) => (
-            <article className="stepCard" key={number}>
-              <span className="stepNumber">{number}</span>
-              <span className="stepIcon">{number === "01" ? "◎" : number === "02" ? "♧" : "↗"}</span>
-              <h3>{title}</h3>
-              <p>{copy}</p>
-            </article>
-          ))}
+            ["01", "Tell us what matters", "Prioritize climate, people, nature, water, circularity, and governance."],
+            ["02", "Set your financial fit", "Add your objective, timeline, risk response, exclusions, and investment amount."],
+            ["03", "Review every choice", "See real tickers, allocation math, historical metrics, confidence, and limitations."],
+          ].map(([number, title, copy]) => <article className="stepCard" key={number}><span className="stepNumber">{number}</span><span className="stepIcon">{number === "01" ? "◎" : number === "02" ? "♧" : "↗"}</span><h3>{title}</h3><p>{copy}</p></article>)}
         </div>
       </section>
 
       <section className="section darkSection" id="approach">
         <div className="approachGrid">
-          <div>
-            <span className="eyebrow lightEyebrow">A more personal approach</span>
-            <h2>Sustainability means something different to everyone.</h2>
-            <p>Green Canopy asks where you want to avoid harm, where you want to fund solutions, and how much flexibility you’re comfortable giving up for closer alignment.</p>
-            <div className="pillRow">
-              {["Climate", "Fair labor", "Biodiversity", "Clean water", "Renewables", "Circularity"].map((item) => <span key={item}>{item}</span>)}
-            </div>
-          </div>
-          <div className="analysisPanel">
-            <span className="panelKicker">What we analyze</span>
-            {[
-              ["Environmental impact", "Emissions, resources, and policy"],
-              ["Social responsibility", "Labor, community, and rights"],
-              ["Governance quality", "Leadership and accountability"],
-              ["Financial resilience", "Growth, stability, and risk"],
-            ].map(([title, copy]) => <div className="analysisItem" key={title}><i>✓</i><div><strong>{title}</strong><small>{copy}</small></div></div>)}
-          </div>
+          <div><span className="eyebrow lightEyebrow">A more personal approach</span><h2>A broad universe, screened for your priorities.</h2><p>The MVP begins with public-company coverage drawn from the Fortune 1000 scope and 100 of the largest U.S.-listed ETFs. It retrieves only the bounded candidate set needed for each simulation.</p><div className="pillRow">{["Climate", "Fair labor", "Biodiversity", "Clean water", "Renewables", "Circularity"].map((item) => <span key={item}>{item}</span>)}</div></div>
+          <div className="analysisPanel"><span className="panelKicker">What we analyze</span>{[
+            ["Values alignment", "Your priorities and exclusions"],
+            ["Third-party ESG risk", "Preserved separately when available"],
+            ["Financial history", "Return, volatility, and drawdown"],
+            ["Diversification", "Correlation and concentration"],
+          ].map(([title, copy]) => <div className="analysisItem" key={title}><i>✓</i><div><strong>{title}</strong><small>{copy}</small></div></div>)}</div>
         </div>
       </section>
 
-      <section className="section impactSection" id="impact">
-        <div className="impactCard">
-          <span className="eyebrow">Clear by design</span>
-          <h2>Know why every investment belongs.</h2>
-          <p>Each illustrative allocation explains how it supports your priorities, contributes to diversification, and fits your risk profile.</p>
-          <button className="button lightButton" onClick={startBuilder}>Create my profile</button>
+      <section className="section impactSection" id="impact"><div className="impactCard"><span className="eyebrow">Clear by design</span><h2>Missing data is a finding—not a blank to fill.</h2><p>Green Canopy never invents unavailable ESG fields. Company candidates without required sustainability data are excluded, and ETF confidence is visibly reduced when provider coverage is missing.</p><button className="button lightButton" onClick={() => setBuilderOpen(true)}>Create my profile</button></div></section>
+      <footer><div className="brand"><span className="brandMark">⌁</span><span>Green Canopy</span></div><span>Educational simulation · Historical performance is not a guarantee · Not investment advice</span></footer>
+
+      {builderOpen && <div className="modalBackdrop" role="dialog" aria-modal="true" aria-label="Build your Green Canopy portfolio">
+        <div className="builder">
+          <aside className="builderAside">
+            <button className="closeButton" onClick={() => !loading && setBuilderOpen(false)} aria-label="Close portfolio builder">×</button>
+            <div className="brand inverse"><span className="brandMark lightMark">⌁</span><span>Green Canopy</span></div>
+            <div className="progressTrack"><span style={{ width: `${loading ? 100 : ((step + 1) / steps.length) * 100}%` }} /></div>
+            <small>{loading ? "Analyzing your choices" : `Step ${step + 1} of ${steps.length}`}</small>
+            <h2>Your values become the strategy.</h2><p>There are no right answers. Choose what feels true to you.</p>
+            <div className="asideTags">{answers.priorities.map((key) => <span key={key}>{priorities.find((item) => item[0] === key)?.[1]}</span>)}</div>
+          </aside>
+          <section className="builderMain">
+            {loading ? <div className="loadingState"><span className="loadingRing" /><span className="eyebrow">Building with care</span><h2>{loadingStages[loadingStage]}</h2><p>We’re retrieving a bounded candidate set and will clearly flag missing provider data.</p><div className="stageList">{loadingStages.map((stage, index) => <span className={index <= loadingStage ? "active" : ""} key={stage}>{index < loadingStage ? "✓" : index === loadingStage ? "•" : "○"} {stage}</span>)}</div></div> : <>
+              <div><span className="eyebrow">{steps[step][0]}</span><h2>{steps[step][1]}</h2><p className="builderCopy">{steps[step][2]}</p></div>
+              {step === 0 && <div className="choiceGrid">{priorities.map(([key, title, copy]) => <button className={`choiceCard ${answers.priorities.includes(key) ? "selected" : ""}`} onClick={() => toggleList("priorities", key, 3)} key={key}><span>{answers.priorities.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>{copy}</small></button>)}</div>}
+              {step === 1 && <OptionList value={answers.philosophy} options={[["avoid_harm","Avoid companies causing harm"],["fund_solutions","Fund direct solutions"],["leaders","Back sustainable leaders"],["transitioners","Support measurable transitioners"],["combination","Combine these approaches"]]} onChange={(philosophy) => setAnswers({...answers, philosophy})} />}
+              {step === 2 && <div className="choiceGrid">{exclusions.map(([key, title]) => <button className={`choiceCard compact ${answers.exclusions.includes(key) ? "selected" : ""}`} onClick={() => toggleList("exclusions", key)} key={key}><span>{answers.exclusions.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>Exclude from consideration</small></button>)}</div>}
+              {step === 3 && <OptionList value={answers.goal} options={[["long_term_growth","Long-term growth"],["growth_and_stability","Growth and stability"],["income_and_preservation","Income and preservation"]]} onChange={(goal) => setAnswers({...answers, goal})} />}
+              {step === 4 && <OptionList value={answers.horizon} options={[["under_3_years","Under 3 years"],["3_to_10_years","3–10 years"],["10_plus_years","10+ years"]]} onChange={(horizon) => setAnswers({...answers, horizon})} />}
+              {step === 5 && <><OptionList value={answers.risk} options={[["move_to_safety","Reduce risk after a decline"],["stay_invested","Stay invested"],["invest_more","Invest more at lower prices"]]} onChange={(risk) => setAnswers({...answers, risk, decline_reaction: risk === "move_to_safety" ? "sell" : risk === "invest_more" ? "buy_more" : "hold"})} /><label className="selectLabel">Sustainability trade-off<select value={answers.tradeoff} onChange={(event) => setAnswers({...answers, tradeoff: event.target.value})}><option value="none">No expected-return trade-off</option><option value="small">Small trade-off</option><option value="moderate">Moderate trade-off</option><option value="strong">Strong trade-off</option></select></label></>}
+              {step === 6 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min="500" max="1000000" step="500" value={answers.amount} onChange={(event) => setAnswers({...answers, amount: Number(event.target.value)})} /></div><input className="range" type="range" min="500" max="100000" step="500" value={Math.min(100000, answers.amount)} onChange={(event) => setAnswers({...answers, amount: Number(event.target.value)})} /><small>$500 minimum <span>$1,000,000 maximum</span></small></div>}
+              {error && <p className="errorMessage" role="alert">{error}</p>}
+              <div className="builderActions"><button className="backButton" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>Back</button><button className="button" disabled={(step === 0 && answers.priorities.length === 0) || answers.amount < 500} onClick={() => step === steps.length - 1 ? generate() : setStep((value) => value + 1)}>{step === steps.length - 1 ? "Create my portfolio" : "Continue"} <span>→</span></button></div>
+            </>}
+          </section>
         </div>
-      </section>
-
-      <footer>
-        <div className="brand"><span className="brandMark">⌁</span><span>Green Canopy</span></div>
-        <span>Educational prototype · Illustrative portfolios only · Not investment advice</span>
-      </footer>
-
-      {builderOpen && (
-        <div className="modalBackdrop" role="dialog" aria-modal="true" aria-label="Build your Green Canopy portfolio">
-          <div className="builder">
-            <aside className="builderAside">
-              <button className="closeButton" onClick={() => setBuilderOpen(false)} aria-label="Close portfolio builder">×</button>
-              <div className="brand inverse"><span className="brandMark lightMark">⌁</span><span>Green Canopy</span></div>
-              <div className="progressTrack"><span style={{ width: `${complete ? 100 : ((step + 1) / steps.length) * 100}%` }} /></div>
-              <small>{complete ? "Profile complete" : `Step ${step + 1} of ${steps.length}`}</small>
-              <h2>Your values become the strategy.</h2>
-              <p>There are no right answers. Choose what feels true to you.</p>
-              <div className="asideTags">{answers.priorities.map((item) => <span key={item}>{item}</span>)}</div>
-            </aside>
-
-            <section className="builderMain">
-              {!complete ? (
-                <>
-                  <div>
-                    <span className="eyebrow">{steps[step].eyebrow}</span>
-                    <h2>{steps[step].title}</h2>
-                    <p className="builderCopy">{steps[step].copy}</p>
-                  </div>
-
-                  {step === 0 && <div className="choiceGrid">{priorityOptions.map(([title, copy]) => {
-                    const selected = answers.priorities.includes(title);
-                    return <button className={`choiceCard ${selected ? "selected" : ""}`} onClick={() => togglePriority(title)} key={title}><span>{selected ? "✓" : "+"}</span><strong>{title}</strong><small>{copy}</small></button>;
-                  })}</div>}
-
-                  {step === 1 && <OptionList value={answers.goal} options={["Long-term growth", "Growth and stability", "Income and preservation"]} onChange={(goal) => setAnswers({ ...answers, goal })} />}
-                  {step === 2 && <OptionList value={answers.horizon} options={["Under 3 years", "3–10 years", "10+ years"]} onChange={(horizon) => setAnswers({ ...answers, horizon })} />}
-                  {step === 3 && <OptionList value={answers.risk} options={["Move to safety", "Stay invested", "Invest more"]} onChange={(risk) => setAnswers({ ...answers, risk })} />}
-                  {step === 4 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min="500" max="1000000" step="500" value={answers.amount} onChange={(event) => setAnswers({ ...answers, amount: Number(event.target.value) })} /></div><input className="range" type="range" min="500" max="100000" step="500" value={Math.min(100000, answers.amount)} onChange={(event) => setAnswers({ ...answers, amount: Number(event.target.value) })} /><small>$500 minimum <span>$1,000,000 maximum</span></small></div>}
-
-                  <div className="builderActions">
-                    <button className="backButton" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>Back</button>
-                    <button className="button" disabled={step === 0 && answers.priorities.length === 0} onClick={next}>{step === steps.length - 1 ? "Create my portfolio" : "Continue"} <span>→</span></button>
-                  </div>
-                </>
-              ) : (
-                <div className="results">
-                  <span className="eyebrow">Your Green Canopy profile</span>
-                  <h2>The Purpose Builder</h2>
-                  <p className="builderCopy">A {riskLabel.toLowerCase()} investor focused on {answers.priorities.join(" and ").toLowerCase()}, with a {answers.horizon.toLowerCase()} time horizon.</p>
-                  <div className="resultStats"><div><small>Investment</small><strong>${answers.amount.toLocaleString()}</strong></div><div><small>Risk profile</small><strong>{riskLabel}</strong></div><div><small>Alignment</small><strong>88/100</strong></div></div>
-                  <div className="holdings">{holdings.map((holding) => <div key={holding.name}><span className="holdingMark">{holding.name.slice(0, 2).toUpperCase()}</span><span><strong>{holding.name}</strong><small>{holding.description}</small></span><b>{holding.percent}%</b><em>${Math.round(answers.amount * holding.percent / 100).toLocaleString()}</em></div>)}</div>
-                  <p className="resultNote"><strong>Why this mix:</strong> Dedicated theme exposure reflects your priorities, while the sustainable core and bond reserve help keep the portfolio diversified.</p>
-                  <div className="builderActions"><button className="backButton" onClick={() => { setComplete(false); setStep(0); }}>Retake</button><button className="button" onClick={() => setBuilderOpen(false)}>Done</button></div>
-                </div>
-              )}
-            </section>
-          </div>
-        </div>
-      )}
+      </div>}
     </main>
   );
 }
 
-function OptionList({ value, options, onChange }: { value: string; options: string[]; onChange: (value: string) => void }) {
-  return <div className="optionList">{options.map((option) => <button className={value === option ? "selected" : ""} onClick={() => onChange(option)} key={option}><span className="radio">{value === option && <i />}</span><strong>{option}</strong></button>)}</div>;
+function OptionList({value, options, onChange}: {value: string; options: string[][]; onChange: (value: string) => void}) {
+  return <div className="optionList">{options.map(([key, label]) => <button className={value === key ? "selected" : ""} onClick={() => onChange(key)} key={key}><span className="radio">{value === key && <i />}</span><strong>{label}</strong></button>)}</div>;
 }

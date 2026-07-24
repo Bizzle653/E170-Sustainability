@@ -15,6 +15,7 @@ out/
 
 # testing
 coverage/
+.venv/
 
 # misc
 .DS_Store
@@ -36,6 +37,7 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
 
 # leftover local tooling
 .vinext/
