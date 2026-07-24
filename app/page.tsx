@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 type Answers = {
   priorities: string[];
@@ -58,6 +60,7 @@ const loadingStages = [
 
 export default function Home() {
   const router = useRouter();
+  const {user} = useAuth();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -115,6 +118,14 @@ export default function Home() {
       if (!response.ok) throw new Error(payload.detail || "Portfolio generation failed");
       localStorage.setItem("greenCanopyPortfolio", JSON.stringify(payload));
       localStorage.removeItem("greenCanopyQuotes");
+      const supabase = getSupabaseBrowserClient();
+      if (supabase && user) {
+        await supabase.from("portfolios").upsert({
+          user_id: user.id,
+          data: payload,
+          updated_at: new Date().toISOString(),
+        });
+      }
       router.push("/results");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "We could not build the portfolio.");
@@ -129,7 +140,7 @@ export default function Home() {
       <nav className="nav">
         <a className="brand" href="#"><span className="brandMark">⌁</span><span>Green Canopy</span></a>
         <div className="navLinks"><a href="#how">How it works</a><a href="#approach">Our approach</a><a href="#impact">Transparency</a></div>
-        <button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button>
+        <div className="navActions">{user ? <a className="backButton navButton" href="/portfolio">My dashboard</a> : <a className="backButton navButton" href="/login">Sign in</a>}<button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button></div>
       </nav>
 
       <section className="hero">

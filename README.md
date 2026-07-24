@@ -111,11 +111,29 @@ npm run build
 
 ## Portfolio dashboard
 
-Generated portfolios are saved on the current device and can be opened at
-`/portfolio`. The dashboard tracks simulated returns, searches the local company
-universe without a market-data request, and requires a full company review
-before a user-directed reallocation. This MVP does not execute trades or sync
-portfolios between devices.
+Generated portfolios can be opened at `/portfolio`. When Supabase is connected,
+the dashboard associates portfolios, profiles, and settings with the signed-in
+user and synchronizes them across sessions. The dashboard tracks simulated
+returns, searches the local company universe without a market-data request, and
+requires a full company review before a user-directed reallocation. This MVP
+does not execute trades.
+
+## Accounts and authentication
+
+Green Canopy uses Supabase Auth for managed email/password authentication and
+Supabase Postgres with row-level security for user-owned records. Passwords are
+not handled or stored by Green Canopy.
+
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the Supabase SQL editor.
+3. Copy `.env.example` to `.env.local` and set:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+4. Add the production `/portfolio` and `/settings` URLs to the Supabase Auth
+   redirect allow list.
+
+The login, profile, settings, password-reset, email-change, and logout interfaces
+remain visibly unavailable until those environment values are connected.
 
 ## How yfinance is used
 

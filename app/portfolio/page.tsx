@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { AccountGate } from "@/components/AccountGate";
+import { AppShell } from "@/components/AppShell";
+import { useAuth } from "@/components/AuthProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -49,6 +53,11 @@ const money = (value: number) => value.toLocaleString("en-US", {style: "currency
 const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 export default function PortfolioDashboard() {
+  return <AccountGate><AppShell><PortfolioContent /></AppShell></AccountGate>;
+}
+
+function PortfolioContent() {
+  const {user} = useAuth();
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
@@ -75,9 +84,21 @@ export default function PortfolioDashboard() {
         setPrices(cache.prices);
         setUpdatedAt(cache.updatedAt);
       }
+      const supabase = getSupabaseBrowserClient();
+      if (supabase && user) {
+        void supabase.from("portfolios").select("data").eq("user_id", user.id).maybeSingle().then(({data}) => {
+          if (data?.data) {
+            const saved = data.data as Portfolio;
+            setPortfolio(saved);
+            localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(saved));
+          } else if (raw) {
+            void supabase.from("portfolios").upsert({user_id: user.id, data: JSON.parse(raw), updated_at: new Date().toISOString()});
+          }
+        });
+      }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [user]);
 
   const holdings = useMemo(() => portfolio?.allocations.map((item) => {
     const price = prices[item.ticker] ?? item.purchase_price ?? (item.shares ? item.dollar_amount / item.shares : 0);
@@ -93,6 +114,10 @@ export default function PortfolioDashboard() {
   function savePortfolio(next: Portfolio) {
     localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(next));
     setPortfolio(next);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase && user) {
+      void supabase.from("portfolios").upsert({user_id: user.id, data: next, updated_at: new Date().toISOString()});
+    }
   }
 
   async function refreshQuotes(force = false) {
@@ -230,9 +255,7 @@ export default function PortfolioDashboard() {
 
   if (!portfolio) return <main className="emptyResults"><div className="brand"><span className="brandMark">⌁</span><span>Green Canopy</span></div><h1>Your canopy is ready to grow.</h1><p>Generate a portfolio first, then it will appear here on this device.</p><Link className="button" href="/">Generate a portfolio</Link></main>;
 
-  return <main className="dashboardPage">
-    <nav className="resultsNav"><Link className="brand" href="/portfolio"><span className="brandMark">⌁</span><span>Green Canopy</span></Link><div className="navActions"><Link className="backButton navButton" href="/results">View analysis</Link><Link className="button buttonSmall" href="/">Generate another</Link></div></nav>
-
+  return <main className="dashboardPage shellDashboard">
     <section className="dashboardHero">
       <div><span className="eyebrow lightEyebrow">Your outstanding portfolio</span><h1>{portfolio.investor_profile.profile_name}</h1><p>Saved on this device · Educational simulation · No trades are executed</p></div>
       <button className="refreshButton" onClick={() => refreshQuotes(true)} disabled={refreshing}>{refreshing ? "Refreshing…" : "Refresh market prices"}</button>
