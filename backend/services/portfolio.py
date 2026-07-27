@@ -19,10 +19,34 @@ from backend.services.sustainability import alignment_score, compose_fund_snapsh
 
 UNIVERSE_PATH = Path(__file__).resolve().parents[1] / "data" / "investment_universe.json"
 
+# How much a candidate's historical risk-adjusted performance competes with its values
+# alignment when deciding which securities make the final cut, keyed off the same
+# sustainability_tradeoff answer already used by the optimizer's objective function.
+# Values-alignment always keeps at least a strong plurality -- even "none" tradeoff
+# stays under 50% financial weight, since this is a values-based tool first.
+FINANCIAL_WEIGHT_BY_TRADEOFF = {
+    "none": 0.45,
+    "small": 0.30,
+    "moderate": 0.18,
+    "strong": 0.08,
+}
+
 
 def load_universe() -> dict[str, Any]:
     with UNIVERSE_PATH.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _percentile_ranks(values: list[float]) -> list[float]:
+    """Rank-based 0..1 normalization so scores on different scales (a 0-100 alignment
+    score vs. an unbounded risk-adjusted return) can be blended without one dominating
+    just because of its units."""
+    order = sorted(range(len(values)), key=lambda i: values[i])
+    ranks = [0.0] * len(values)
+    denominator = max(1, len(values) - 1)
+    for position, index in enumerate(order):
+        ranks[index] = position / denominator
+    return ranks
 
 
 def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
@@ -78,6 +102,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             info = market.get_info(symbol)
             close = market.get_history(symbol)
             sustainability = market.get_sustainability(symbol)
+            candidate_metrics = MarketDataService.metrics(close)
         except MarketDataError as exc:
             excluded.append({"ticker": symbol, "reason": str(exc)})
             continue
@@ -92,6 +117,12 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             profile, item.get("tags", []), sustainability, item["type"],
             info.get("longBusinessSummary"), fund_evidence,
         )
+        # A simple historical risk-adjusted return (return per unit of volatility) --
+        # the same idea as a Sharpe ratio, used only to rank candidates against each
+        # other, not shown to the user as a formal risk-adjusted metric.
+        risk_adjusted_return = candidate_metrics["annualized_historical_return"] / max(
+            candidate_metrics["annualized_volatility"], 0.01
+        )
         evaluated.append({
             **item,
             "name": info.get("longName") or info.get("shortName") or symbol,
@@ -100,9 +131,8 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "sustainability": sustainability,
             "alignment": alignment,
             "business_summary": business_summary,
+            "risk_adjusted_return": risk_adjusted_return,
         })
-        if len(evaluated) >= target_holdings:
-            break
 
     if len(evaluated) < 5:
         raise MarketDataError(
@@ -110,6 +140,16 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "Try again later; Green Canopy will not fabricate missing provider data."
         )
 
+    # Blend values-alignment with historical risk-adjusted performance to choose the
+    # final holdings, rather than relying on tag-match order alone. Financial weight is
+    # tied to the user's own sustainability_tradeoff answer so the blend reflects what
+    # they actually said they'd accept, not an arbitrary fixed ratio.
+    financial_weight = FINANCIAL_WEIGHT_BY_TRADEOFF.get(profile.sustainability_tradeoff, 0.18)
+    alignment_ranks = _percentile_ranks([item["alignment"]["alignment_score"] for item in evaluated])
+    financial_ranks = _percentile_ranks([item["risk_adjusted_return"] for item in evaluated])
+    for item, alignment_rank, financial_rank in zip(evaluated, alignment_ranks, financial_ranks):
+        item["blended_rank"] = financial_weight * financial_rank + (1 - financial_weight) * alignment_rank
+    evaluated.sort(key=lambda item: item["blended_rank"], reverse=True)
     evaluated = evaluated[:target_holdings]
     prices = pd.concat([item["history"] for item in evaluated], axis=1, join="inner").dropna()
     if len(prices) < 60:

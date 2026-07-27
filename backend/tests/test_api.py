@@ -19,6 +19,9 @@ class FakeMarket:
     def get_sustainability(self, symbol):
         return {"totalEsg": 20, "governanceScore": 15}
 
+    def get_top_holdings(self, symbol):
+        return []
+
     def get_history(self, symbol):
         seed = sum(map(ord, symbol))
         rng = np.random.default_rng(seed)
