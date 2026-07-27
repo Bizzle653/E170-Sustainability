@@ -1004,7 +1004,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Petroleum Refining",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [
         "fossil_fuels"
       ],
@@ -1109,7 +1111,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Petroleum Refining",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [
         "fossil_fuels"
       ],
@@ -1276,7 +1280,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Petroleum Refining",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 29,
       "rank": 129
@@ -1392,7 +1398,10 @@
       "type": "stock",
       "sector": "Motor Vehicles & Parts",
       "industry": "Motor Vehicles & Parts",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 40,
       "rank": 140
@@ -1431,7 +1440,10 @@
       "type": "stock",
       "sector": "Food, Beverages & Tobacco",
       "industry": "Food Production",
-      "tags": [],
+      "tags": [
+        "climate",
+        "sustainable_agriculture"
+      ],
       "exclusions": [],
       "fortune_rank": 43,
       "rank": 143
@@ -2411,7 +2423,9 @@
       "type": "stock",
       "sector": "Financials",
       "industry": "Securities",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 136,
       "rank": 236
@@ -2568,7 +2582,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Energy",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 150,
       "rank": 250
@@ -2695,7 +2712,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Oil and Gas Equipment, Services",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 161,
       "rank": 261
@@ -2769,7 +2788,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 167,
       "rank": 267
@@ -3005,7 +3026,10 @@
       "type": "stock",
       "sector": "Financials",
       "industry": "Securities",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 188,
       "rank": 288
@@ -3049,7 +3073,10 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 192,
       "rank": 292
@@ -3388,7 +3415,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 224,
       "rank": 324
@@ -3804,7 +3833,9 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 265,
       "rank": 365
@@ -3994,7 +4025,9 @@
       "type": "stock",
       "sector": "Food, Beverages & Tobacco",
       "industry": "Food Production",
-      "tags": [],
+      "tags": [
+        "sustainable_agriculture"
+      ],
       "exclusions": [],
       "fortune_rank": 285,
       "rank": 385
@@ -4104,7 +4137,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Construction and Farm Machinery",
-      "tags": [],
+      "tags": [
+        "sustainable_agriculture"
+      ],
       "exclusions": [],
       "fortune_rank": 295,
       "rank": 395
@@ -4181,7 +4216,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 302,
       "rank": 402
@@ -4324,7 +4362,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "clean_water",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 318,
       "rank": 418
@@ -4357,7 +4398,10 @@
       "type": "stock",
       "sector": "Financials",
       "industry": "Commercial Banks",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 321,
       "rank": 421
@@ -4390,7 +4434,11 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "clean_water",
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 324,
       "rank": 424
@@ -4412,7 +4460,9 @@
       "type": "stock",
       "sector": "Chemicals",
       "industry": "Chemicals",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 326,
       "rank": 426
@@ -4467,7 +4517,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 331,
       "rank": 431
@@ -4555,7 +4608,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 339,
       "rank": 439
@@ -4643,7 +4699,10 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 347,
       "rank": 447
@@ -4654,7 +4713,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 348,
       "rank": 448
@@ -5473,7 +5535,9 @@
       "type": "stock",
       "sector": "Chemicals",
       "industry": "Chemicals",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 426,
       "rank": 526
@@ -5572,7 +5636,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 435,
       "rank": 535
@@ -5660,7 +5727,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Oil and Gas Equipment, Services",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 444,
       "rank": 544
@@ -5704,7 +5774,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 448,
       "rank": 548
@@ -5726,7 +5798,9 @@
       "type": "stock",
       "sector": "Materials",
       "industry": "Packaging, Containers",
-      "tags": [],
+      "tags": [
+        "circular_economy"
+      ],
       "exclusions": [],
       "fortune_rank": 450,
       "rank": 550
@@ -5869,7 +5943,9 @@
       "type": "stock",
       "sector": "Financials",
       "industry": "Diversified Financials",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 464,
       "rank": 564
@@ -6001,7 +6077,9 @@
       "type": "stock",
       "sector": "Materials",
       "industry": "Forest and Paper Products",
-      "tags": [],
+      "tags": [
+        "biodiversity"
+      ],
       "exclusions": [],
       "fortune_rank": 476,
       "rank": 576
@@ -6023,7 +6101,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 478,
       "rank": 578
@@ -6111,7 +6192,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 486,
       "rank": 586
@@ -6199,7 +6282,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 494,
       "rank": 594
@@ -6331,7 +6417,10 @@
       "type": "stock",
       "sector": "Technology",
       "industry": "Information Technology Services",
-      "tags": [],
+      "tags": [
+        "circular_economy",
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 507,
       "rank": 607
@@ -6408,7 +6497,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 514,
       "rank": 614
@@ -6430,7 +6521,9 @@
       "type": "stock",
       "sector": "Materials",
       "industry": "Building Materials, Glass",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 516,
       "rank": 616
@@ -6518,7 +6611,9 @@
       "type": "stock",
       "sector": "Materials",
       "industry": "Packaging, Containers",
-      "tags": [],
+      "tags": [
+        "circular_economy"
+      ],
       "exclusions": [],
       "fortune_rank": 524,
       "rank": 624
@@ -7211,7 +7306,10 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 587,
       "rank": 687
@@ -7475,7 +7573,9 @@
       "type": "stock",
       "sector": "Business Services",
       "industry": "Waste Management",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 612,
       "rank": 712
@@ -7970,7 +8070,10 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 662,
       "rank": 762
@@ -7981,7 +8084,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Oil and Gas Equipment, Services",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 663,
       "rank": 763
@@ -8201,7 +8306,10 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "clean_water",
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 684,
       "rank": 784
@@ -8830,7 +8938,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 743,
       "rank": 843
@@ -9039,7 +9149,10 @@
       "type": "stock",
       "sector": "Financials",
       "industry": "Commercial Banks",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 762,
       "rank": 862
@@ -9061,7 +9174,9 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 764,
       "rank": 864
@@ -9105,7 +9220,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Electronics, Electrical Equip.",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 768,
       "rank": 868
@@ -9402,7 +9519,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 797,
       "rank": 897
@@ -9424,7 +9544,9 @@
       "type": "stock",
       "sector": "Health Care",
       "industry": "Medical Products and Equipment",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 799,
       "rank": 899
@@ -9435,7 +9557,10 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "clean_water",
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 800,
       "rank": 900
@@ -9589,7 +9714,9 @@
       "type": "stock",
       "sector": "Chemicals",
       "industry": "Chemicals",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 814,
       "rank": 914
@@ -9600,7 +9727,9 @@
       "type": "stock",
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 815,
       "rank": 915
@@ -9809,7 +9938,9 @@
       "type": "stock",
       "sector": "Industrials",
       "industry": "Industrial Machinery",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 834,
       "rank": 934
@@ -9933,7 +10064,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Energy",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 845,
       "rank": 945
@@ -10307,7 +10441,9 @@
       "type": "stock",
       "sector": "Materials",
       "industry": "Building Materials, Glass",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 881,
       "rank": 981
@@ -10582,7 +10718,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 906,
       "rank": 1006
@@ -10967,7 +11105,10 @@
       "type": "stock",
       "sector": "Retailing",
       "industry": "Specialty Retailers: Other",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 943,
       "rank": 1043

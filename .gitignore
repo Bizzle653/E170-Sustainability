@@ -20,6 +20,9 @@ coverage/
 **/__pycache__/
 *.py[cod]
 
+# data classification working state
+backend/data/.classify_checkpoint.json
+
 # misc
 .DS_Store
 *.pem
