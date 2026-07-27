@@ -22,21 +22,34 @@ class MarketDataError(RuntimeError):
 _ABBREVIATIONS = {"inc", "corp", "co", "ltd", "llc", "plc", "l.p", "s.a", "n.v", "jr", "sr", "e.g", "i.e"}
 
 
-def first_sentence(text: str | None, max_length: int = 220) -> str | None:
-    """Extract a single readable sentence from a longer business summary."""
+def split_sentences(text: str | None) -> list[str]:
+    """Split a business summary into abbreviation-aware sentences."""
     if not text:
-        return None
+        return []
     text = text.strip()
     if not text:
-        return None
+        return []
+    sentences: list[str] = []
+    start = 0
     for match in re.finditer(r"\.(\s+|$)", text):
         end = match.start()
         preceding_word = re.split(r"[\s,(]", text[:end])[-1].lower()
         if preceding_word in _ABBREVIATIONS:
             continue
-        sentence = text[: end + 1]
-        return sentence if len(sentence) <= max_length else sentence[:max_length].rsplit(" ", 1)[0] + "…"
-    return text if len(text) <= max_length else text[:max_length].rsplit(" ", 1)[0] + "…"
+        sentences.append(text[start : end + 1].strip())
+        start = match.end()
+    if start < len(text):
+        sentences.append(text[start:].strip())
+    return [s for s in sentences if s]
+
+
+def first_sentence(text: str | None, max_length: int = 220) -> str | None:
+    """Extract a single readable sentence from a longer business summary."""
+    sentences = split_sentences(text)
+    if not sentences:
+        return None
+    sentence = sentences[0]
+    return sentence if len(sentence) <= max_length else sentence[:max_length].rsplit(" ", 1)[0] + "…"
 
 
 @dataclass
@@ -135,6 +148,29 @@ class MarketDataService:
             return {}
 
         return self.cache.get_or_set(f"sustainability:{symbol}", self.SUSTAINABILITY_TTL, load)
+
+    def get_top_holdings(self, symbol: str, limit: int = 8) -> list[dict[str, Any]]:
+        """Fetch a fund's actual current holdings (real companies, not legal text)."""
+        symbol = symbol.upper().strip()
+
+        def load() -> list[dict[str, Any]]:
+            try:
+                funds_data = self._ticker(symbol).funds_data
+                holdings = funds_data.top_holdings if funds_data is not None else None
+            except Exception:
+                return []
+            if holdings is None or holdings.empty:
+                return []
+            results = []
+            for ticker_symbol, row in holdings.iterrows():
+                results.append({
+                    "ticker": str(ticker_symbol),
+                    "name": str(row.get("Name", ticker_symbol)),
+                    "weight": _json_value(row.get("Holding Percent")),
+                })
+            return results[:limit]
+
+        return self.cache.get_or_set(f"holdings:{symbol}", self.SUSTAINABILITY_TTL, load)
 
     @staticmethod
     def metrics(close: pd.Series) -> dict[str, float]:

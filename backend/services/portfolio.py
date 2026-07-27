@@ -14,7 +14,7 @@ from backend.models import Allocation, InvestorProfile, PortfolioRequest, Portfo
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio_optimizer import optimize_weights, portfolio_metrics, rounded_allocations
-from backend.services.sustainability import alignment_score
+from backend.services.sustainability import alignment_score, compose_fund_snapshot
 
 
 UNIVERSE_PATH = Path(__file__).resolve().parents[1] / "data" / "investment_universe.json"
@@ -65,6 +65,8 @@ def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[d
 
 def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> PortfolioResponse:
     profile = request.profile or build_profile(request.answers)  # type: ignore[arg-type]
+    active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
+    universe_by_ticker = {item["ticker"]: item for item in load_universe()["securities"]}
     target_holdings = max(request.number_of_holdings, math.ceil(1 / profile.max_concentration))
     candidates, excluded = select_candidates(profile, max(24, target_holdings * 3))
     evaluated: list[dict[str, Any]] = []
@@ -79,7 +81,17 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         except MarketDataError as exc:
             excluded.append({"ticker": symbol, "reason": str(exc)})
             continue
-        alignment = alignment_score(profile, item.get("tags", []), sustainability, item["type"])
+        business_summary = None
+        fund_evidence: dict[str, str] = {}
+        if item["type"] == "stock":
+            business_summary = first_sentence(info.get("longBusinessSummary"))
+        else:
+            holdings = market.get_top_holdings(symbol)
+            business_summary, fund_evidence = compose_fund_snapshot(holdings, universe_by_ticker, active_priorities)
+        alignment = alignment_score(
+            profile, item.get("tags", []), sustainability, item["type"],
+            info.get("longBusinessSummary"), fund_evidence,
+        )
         evaluated.append({
             **item,
             "name": info.get("longName") or info.get("shortName") or symbol,
@@ -87,7 +99,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "history": close,
             "sustainability": sustainability,
             "alignment": alignment,
-            "business_summary": first_sentence(info.get("longBusinessSummary")) if item["type"] == "stock" else None,
+            "business_summary": business_summary,
         })
         if len(evaluated) >= target_holdings:
             break

@@ -14,7 +14,7 @@ from backend.models import (
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio import load_universe, select_candidates
-from backend.services.sustainability import alignment_score
+from backend.services.sustainability import alignment_score, compose_fund_snapshot
 
 
 ALIGNMENT_FLAG_THRESHOLD = 45
@@ -53,7 +53,15 @@ def _evaluate_holdings(
         tags = universe_item.get("tags", []) if universe_item else []
         sector = info.get("sector") or (universe_item.get("sector") if universe_item else None) or "Unclassified"
         name = info.get("longName") or info.get("shortName") or symbol
-        assessment = alignment_score(profile, tags, sustainability, asset_type)
+        business_summary = None
+        fund_evidence: dict[str, str] = {}
+        if asset_type == "stock":
+            business_summary = first_sentence(info.get("longBusinessSummary"))
+        else:
+            active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
+            fund_holdings = market.get_top_holdings(symbol)
+            business_summary, fund_evidence = compose_fund_snapshot(fund_holdings, universe_by_ticker, active_priorities)
+        assessment = alignment_score(profile, tags, sustainability, asset_type, info.get("longBusinessSummary"), fund_evidence)
         evaluated.append({
             "ticker": symbol,
             "name": name,
@@ -63,7 +71,7 @@ def _evaluate_holdings(
             "in_green_canopy_universe": universe_item is not None,
             "sustainability_status": "available" if sustainability else "unavailable",
             "assessment": assessment,
-            "business_summary": first_sentence(info.get("longBusinessSummary")) if asset_type == "stock" else None,
+            "business_summary": business_summary,
         })
 
     return evaluated, excluded
@@ -74,6 +82,7 @@ def _build_suggestions(
     candidates: list[dict[str, Any]],
     held_tickers: set[str],
     market: MarketDataService,
+    universe_by_ticker: dict[str, dict[str, Any]],
     limit: int = 3,
 ) -> list[SuggestedHolding]:
     suggestions: list[SuggestedHolding] = []
@@ -97,7 +106,15 @@ def _build_suggestions(
         # different ideas, not near-duplicate large-cap growth funds.
         if sector in used_sectors:
             continue
-        assessment = alignment_score(profile, candidate.get("tags", []), sustainability, candidate["type"])
+        business_summary = None
+        fund_evidence: dict[str, str] = {}
+        if candidate["type"] == "stock":
+            business_summary = first_sentence(info.get("longBusinessSummary"))
+        else:
+            active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
+            fund_holdings = market.get_top_holdings(symbol)
+            business_summary, fund_evidence = compose_fund_snapshot(fund_holdings, universe_by_ticker, active_priorities)
+        assessment = alignment_score(profile, candidate.get("tags", []), sustainability, candidate["type"], info.get("longBusinessSummary"), fund_evidence)
         matched = assessment["matched_priorities"]
         if not matched:
             continue
@@ -111,7 +128,7 @@ def _build_suggestions(
             matched_priorities=matched,
             why_suggested=f"Supports {', '.join(matched)}, which you weren't otherwise holding.",
             detail=assessment["detail"],
-            business_summary=first_sentence(info.get("longBusinessSummary")) if candidate["type"] == "stock" else None,
+            business_summary=business_summary,
         ))
     return suggestions
 
@@ -166,7 +183,7 @@ def analyze_portfolio(request: PortfolioAnalysisRequest, market: MarketDataServi
 
     held_tickers = {item["ticker"] for item in evaluated}
     candidates, _ = select_candidates(profile, limit=30)
-    suggestions = _build_suggestions(profile, candidates, held_tickers, market)
+    suggestions = _build_suggestions(profile, candidates, held_tickers, market, universe_by_ticker)
 
     retrieved_at = datetime.now(timezone.utc).isoformat()
     warnings: list[str] = []

@@ -119,6 +119,7 @@ class PriorityMatch(BaseModel):
     label: str
     matched: bool
     profile_weight: float
+    supporting_evidence: str | None = None
 
 
 class EsgField(BaseModel):
@@ -131,6 +132,7 @@ class AlignmentDetail(BaseModel):
     explanation: str
     priority_breakdown: list[PriorityMatch]
     esg_snapshot: list[EsgField]
+    business_summary_available: bool = False
 
 
 class HoldingAssessment(BaseModel):

@@ -121,7 +121,7 @@ def analyze_company(request: CompanyAnalysisRequest) -> CompanyAnalysisResponse:
         sustainability = market_data.get_sustainability(symbol)
     except MarketDataError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    assessment = alignment_score(request.profile, item.get("tags", []), sustainability, "stock")
+    assessment = alignment_score(request.profile, item.get("tags", []), sustainability, "stock", info.get("longBusinessSummary"))
     return CompanyAnalysisResponse(
         **company_data.model_dump(),
         description=info.get("longBusinessSummary"),
