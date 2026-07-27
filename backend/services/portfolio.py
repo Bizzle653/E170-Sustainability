@@ -12,7 +12,7 @@ import pandas as pd
 
 from backend.models import Allocation, InvestorProfile, PortfolioRequest, PortfolioResponse
 from backend.services.investor_profile import build_profile
-from backend.services.market_data import MarketDataError, MarketDataService
+from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio_optimizer import optimize_weights, portfolio_metrics, rounded_allocations
 from backend.services.sustainability import alignment_score
 
@@ -29,7 +29,11 @@ def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     priority = profile.sustainability_priority_weights
     match = sum(priority.get(tag, 0) for tag in item.get("tags", []))
     diversified = 0.12 if item["type"] == "etf" else 0
-    rank_tiebreaker = 1 / max(1, item.get("rank", 9999))
+    # A small nudge among otherwise-equal candidates. ETF and stock "rank" come from
+    # different scales (ETF: 1-100 by assets, stock: 1-1055 combined universe rank), so
+    # this must stay tiny — at full weight it let top-asset ETFs (rank 1) outscore a real
+    # priority-tag match and crowd every individual stock out of recommendations.
+    rank_tiebreaker = 1 / (100 * max(1, item.get("rank", 9999)))
     return match * 10 + diversified + rank_tiebreaker
 
 
@@ -52,9 +56,11 @@ def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[d
     stocks = sorted((x for x in eligible if x["type"] == "stock"), key=lambda x: _candidate_score(x, profile), reverse=True)
     etfs = sorted((x for x in eligible if x["type"] == "etf"), key=lambda x: _candidate_score(x, profile), reverse=True)
     stock_slots = min(max(6, limit // 2), len(stocks))
-    selected = stocks[:stock_slots] + etfs[: max(0, limit - stock_slots)]
-    selected.sort(key=lambda x: _candidate_score(x, profile), reverse=True)
-    return selected, excluded[:30]
+    # Deliberately not re-sorted by score afterward: that used to erase this stock
+    # reservation, since ETF "rank" (1-100, dense) beats stock "rank" (up to 1055,
+    # sparse) as a tiebreaker on almost every tie, letting ETFs silently crowd out
+    # every individual stock once evaluation stops at the requested holding count.
+    return stocks[:stock_slots] + etfs[: max(0, limit - stock_slots)], excluded[:30]
 
 
 def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> PortfolioResponse:
@@ -73,9 +79,6 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         except MarketDataError as exc:
             excluded.append({"ticker": symbol, "reason": str(exc)})
             continue
-        if item["type"] == "stock" and not sustainability:
-            excluded.append({"ticker": symbol, "reason": "Yahoo sustainability data unavailable"})
-            continue
         alignment = alignment_score(profile, item.get("tags", []), sustainability, item["type"])
         evaluated.append({
             **item,
@@ -84,6 +87,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "history": close,
             "sustainability": sustainability,
             "alignment": alignment,
+            "business_summary": first_sentence(info.get("longBusinessSummary")) if item["type"] == "stock" else None,
         })
         if len(evaluated) >= target_holdings:
             break
@@ -131,6 +135,8 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             matched_priorities=matched,
             why_selected=why,
             sustainability_status="available" if item["sustainability"] else "unavailable",
+            detail=item["alignment"]["detail"],
+            business_summary=item["business_summary"],
         ))
 
     weighted_alignment = sum(a.alignment_score * a.weight / 100 for a in allocations)
@@ -142,9 +148,6 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         1,
     )
     retrieved_at = datetime.now(timezone.utc).isoformat()
-    missing_count = sum(1 for item in allocations if item.sustainability_status == "unavailable")
-    if missing_count:
-        warnings.append(f"{missing_count} ETF holding(s) lack Yahoo sustainability fields; confidence was reduced.")
 
     return PortfolioResponse(
         investor_profile=profile,
@@ -160,8 +163,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         warnings=warnings,
         limitations=[
             "Historical returns are descriptive, not forecasts or guarantees.",
-            "Yahoo sustainability fields are third-party ESG risk indicators, not proof of positive impact.",
-            "Green Canopy alignment is a transparent educational score, not a third-party ESG rating.",
+            "Green Canopy alignment is a transparent educational score based on classification tags, not a third-party ESG rating.",
             "This educational simulation is not financial advice and does not execute trades.",
         ],
         excluded_investments=excluded[:50],

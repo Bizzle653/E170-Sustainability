@@ -10,6 +10,8 @@ from backend.models import (
     CompanyAnalysisResponse,
     CompanyResponse,
     InvestorProfile,
+    PortfolioAnalysisRequest,
+    PortfolioAnalysisResponse,
     PortfolioRequest,
     PortfolioResponse,
     ProfileRequest,
@@ -20,6 +22,7 @@ from backend.models import (
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService
 from backend.services.portfolio import generate_portfolio, load_universe
+from backend.services.portfolio_review import analyze_portfolio
 from backend.services.sustainability import alignment_score
 
 
@@ -166,5 +169,13 @@ def profile(request: ProfileRequest) -> InvestorProfile:
 def portfolio(request: PortfolioRequest) -> PortfolioResponse:
     try:
         return generate_portfolio(request, market_data)
+    except MarketDataError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/api/portfolio/analyze", response_model=PortfolioAnalysisResponse)
+def portfolio_analysis(request: PortfolioAnalysisRequest) -> PortfolioAnalysisResponse:
+    try:
+        return analyze_portfolio(request, market_data)
     except MarketDataError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc

@@ -2745,7 +2745,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Energy",
-      "tags": [],
+      "tags": [
+        "climate"
+      ],
       "exclusions": [],
       "fortune_rank": 165,
       "rank": 265
@@ -3732,7 +3734,7 @@
     },
     {
       "ticker": "EL",
-      "name": "Est\u00e9e Lauder",
+      "name": "Estée Lauder",
       "type": "stock",
       "sector": "Household Products",
       "industry": "Household and Personal Products",
@@ -8518,7 +8520,9 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
-      "tags": [],
+      "tags": [
+        "clean_water"
+      ],
       "exclusions": [],
       "fortune_rank": 714,
       "rank": 814
@@ -9904,7 +9908,10 @@
       "type": "stock",
       "sector": "Energy",
       "industry": "Energy",
-      "tags": [],
+      "tags": [
+        "climate",
+        "renewable_energy"
+      ],
       "exclusions": [],
       "fortune_rank": 843,
       "rank": 943

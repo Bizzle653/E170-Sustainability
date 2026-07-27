@@ -143,9 +143,9 @@ In-memory cache lifetimes are 15 minutes for company/quote information, 12 hours
 
 ## Sustainability-data limitations
 
-Yahoo sustainability fields are third-party ESG-risk information, not proof that a company or fund creates positive impact. Raw provider fields stay separate from Green Canopy’s calculated user-alignment score. Lower-is-better Yahoo risk-style fields are transformed only after their direction is explicitly identified in code.
+Yahoo discontinued its free ESG/sustainability API endpoint (it now returns HTTP 404 for every ticker), so third-party ESG data is currently unavailable across the board. The scoring code still supports it if Yahoo restores the endpoint, but alignment scores today are driven entirely by Green Canopy's own classification tags. Missing sustainability values are never replaced with zero or fabricated scores.
 
-Missing sustainability values remain unavailable; they are never replaced with zero or fabricated scores. Stock candidates without required Yahoo sustainability data are normally excluded. ETFs may remain for diversification using clearly labeled Green Canopy classification metadata, but their confidence is reduced and the limitation appears in the result.
+Stock candidates are no longer excluded for lacking Yahoo sustainability data — since that data is universally unavailable right now, requiring it would have silently removed all 955 individual stocks from consideration, leaving only ETFs.
 
 Category tags in `investment_universe.json` are Green Canopy classification metadata, not third-party ESG facts. Historical performance is descriptive and does not guarantee future results.
 

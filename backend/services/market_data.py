@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 import threading
 import time
 from dataclasses import dataclass
@@ -16,6 +17,26 @@ from backend.models import CompanyResponse, SustainabilityPayload
 
 class MarketDataError(RuntimeError):
     pass
+
+
+_ABBREVIATIONS = {"inc", "corp", "co", "ltd", "llc", "plc", "l.p", "s.a", "n.v", "jr", "sr", "e.g", "i.e"}
+
+
+def first_sentence(text: str | None, max_length: int = 220) -> str | None:
+    """Extract a single readable sentence from a longer business summary."""
+    if not text:
+        return None
+    text = text.strip()
+    if not text:
+        return None
+    for match in re.finditer(r"\.(\s+|$)", text):
+        end = match.start()
+        preceding_word = re.split(r"[\s,(]", text[:end])[-1].lower()
+        if preceding_word in _ABBREVIATIONS:
+            continue
+        sentence = text[: end + 1]
+        return sentence if len(sentence) <= max_length else sentence[:max_length].rsplit(" ", 1)[0] + "…"
+    return text if len(text) <= max_length else text[:max_length].rsplit(" ", 1)[0] + "…"
 
 
 @dataclass

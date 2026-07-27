@@ -140,7 +140,7 @@ export default function Home() {
       <nav className="nav">
         <a className="brand" href="#"><span className="brandMark">⌁</span><span>Green Canopy</span></a>
         <div className="navLinks"><a href="#how">How it works</a><a href="#approach">Our approach</a><a href="#impact">Transparency</a></div>
-        <div className="navActions">{user ? <a className="backButton navButton" href="/portfolio">My dashboard</a> : <a className="backButton navButton" href="/login">Sign in</a>}<button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button></div>
+        <div className="navActions"><a className="backButton navButton" href="/review">Review my holdings</a>{user ? <a className="backButton navButton" href="/portfolio">My dashboard</a> : <a className="backButton navButton" href="/login">Sign in</a>}<button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button></div>
       </nav>
 
       <section className="hero">
@@ -170,14 +170,14 @@ export default function Home() {
           <div><span className="eyebrow lightEyebrow">A more personal approach</span><h2>A broad universe, screened for your priorities.</h2><p>The MVP begins with public-company coverage drawn from the Fortune 1000 scope and 100 of the largest U.S.-listed ETFs. It retrieves only the bounded candidate set needed for each simulation.</p><div className="pillRow">{["Climate", "Fair labor", "Biodiversity", "Clean water", "Renewables", "Circularity"].map((item) => <span key={item}>{item}</span>)}</div></div>
           <div className="analysisPanel"><span className="panelKicker">What we analyze</span>{[
             ["Values alignment", "Your priorities and exclusions"],
-            ["Third-party ESG risk", "Preserved separately when available"],
+            ["Classification tags", "Climate, labor, water, and more — transparently scored"],
             ["Financial history", "Return, volatility, and drawdown"],
             ["Diversification", "Correlation and concentration"],
           ].map(([title, copy]) => <div className="analysisItem" key={title}><i>✓</i><div><strong>{title}</strong><small>{copy}</small></div></div>)}</div>
         </div>
       </section>
 
-      <section className="section impactSection" id="impact"><div className="impactCard"><span className="eyebrow">Clear by design</span><h2>Missing data is a finding—not a blank to fill.</h2><p>Green Canopy never invents unavailable ESG fields. Company candidates without required sustainability data are excluded, and ETF confidence is visibly reduced when provider coverage is missing.</p><button className="button lightButton" onClick={() => setBuilderOpen(true)}>Create my profile</button></div></section>
+      <section className="section impactSection" id="impact"><div className="impactCard"><span className="eyebrow">Clear by design</span><h2>Every score explains itself.</h2><p>Each holding shows exactly which of your priorities it matches, a one-sentence description of what the company actually does, and the full reasoning behind its score—never a black-box number.</p><button className="button lightButton" onClick={() => setBuilderOpen(true)}>Create my profile</button></div></section>
       <footer><div className="brand"><span className="brandMark">⌁</span><span>Green Canopy</span></div><span>Educational simulation · Historical performance is not a guarantee · Not investment advice</span></footer>
 
       {builderOpen && <div className="modalBackdrop" role="dialog" aria-modal="true" aria-label="Build your Green Canopy portfolio">

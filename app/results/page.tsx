@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
 
 type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
   dollar_amount: number; purchase_price: number; shares: number; alignment_score: number; confidence: string;
-  matched_priorities: string[]; why_selected: string; sustainability_status: string;
+  matched_priorities: string[]; why_selected: string; sustainability_status: string; detail: AlignmentDetail;
+  business_summary: string | null;
 };
 type Portfolio = {
   investor_profile: {profile_name: string; profile_description: string; risk_score: number; sustainability_priority_weights: Record<string, number>};
@@ -18,6 +20,13 @@ type Portfolio = {
 
 const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
 const money = (value: number) => value.toLocaleString("en-US", {style: "currency", currency: "USD"});
+const GLOSSARY: [string, string][] = [
+  ["Alignment score", "How well this portfolio matches the priorities you chose, on a 0-100 scale. It is not a percentage of anything."],
+  ["Confidence", "How strongly a holding matches your priorities — high means 2 or more matches, medium means 1, low means none."],
+  ["Diversification score", "Higher means your money is spread across more industries instead of concentrated in one."],
+  ["Volatility", "How much a holding's value has swung year to year historically. Higher is bumpier, not automatically worse."],
+  ["Maximum drawdown", "The worst peak-to-low drop over the historical period shown — a sense of the roughest ride you'd have lived through."],
+];
 
 export default function ResultsPage() {
   const stored = useSyncExternalStore(
@@ -35,22 +44,39 @@ export default function ResultsPage() {
     <header className="resultsHero"><div><span className="eyebrow">Your Green Canopy portfolio</span><h1>{portfolio.investor_profile.profile_name}</h1><p>{portfolio.investor_profile.profile_description} Your strongest priorities were {topPriorities.join(", ")}.</p></div><div className="heroScore"><span>Alignment</span><strong>{portfolio.sustainability_alignment_score}</strong><small>Green Canopy score · not “percent sustainable”</small></div></header>
     <section className="metricGrid">
       <Metric label="Investment" value={money(portfolio.total_investment_amount)} note="Illustrative amount" />
-      <Metric label="Historical annual return" value={pct(portfolio.annualized_historical_return)} note="Not a forecast" />
-      <Metric label="Historical volatility" value={pct(portfolio.annualized_volatility)} note="Annualized" />
-      <Metric label="Maximum drawdown" value={pct(portfolio.maximum_drawdown)} note="Observed period" />
+      <Metric label="Historical annual return" value={pct(portfolio.annualized_historical_return)} note="Not a forecast" hint="Average yearly gain over the past 3 years. Past performance never guarantees future results." />
+      <Metric label="Historical volatility" value={pct(portfolio.annualized_volatility)} note="How bumpy the ride is" hint="How much the portfolio's value has swung year to year. Higher means a bumpier ride, not necessarily a worse outcome." />
+      <Metric label="Maximum drawdown" value={pct(portfolio.maximum_drawdown)} note="Worst historical drop" hint="The biggest fall from a peak to a low point over the past 3 years — the worst-case dip you'd have lived through." />
       <Metric label="Holdings" value={String(portfolio.number_of_holdings)} note="2% minimum position" />
-      <Metric label="Diversification" value={`${portfolio.diversification_score}/100`} note="Sector concentration" />
+      <Metric label="Diversification" value={`${portfolio.diversification_score}/100`} note="Spread across sectors" hint="Higher means your money is spread across more industries instead of concentrated in one — a form of risk reduction." />
     </section>
     <section className="resultsSection"><div className="resultsHeading"><div><span className="eyebrow">Allocation</span><h2>Why every holding belongs.</h2></div><p>Weights total {portfolio.allocations.reduce((sum,item) => sum + item.weight, 0).toFixed(2)}% · Dollars total {money(portfolio.allocations.reduce((sum,item) => sum + item.dollar_amount, 0))}</p></div>
-      <div className="allocationTable">{portfolio.allocations.map((item) => <article className="allocationRow" key={item.ticker}><span className="tickerBadge">{item.ticker}</span><div className="holdingIdentity"><strong>{item.name}</strong><small>{item.sector} · {item.asset_type.toUpperCase()}</small></div><div><strong>{item.weight.toFixed(2)}%</strong><small>{money(item.dollar_amount)}</small></div><div className="alignmentCell"><strong>{item.alignment_score}/100</strong><small>{item.confidence} confidence · ESG data {item.sustainability_status}</small></div><p>{item.why_selected}</p></article>)}</div>
+      <div className="allocationTable">{portfolio.allocations.map((item) => <AllocationRow item={item} key={item.ticker} />)}</div>
     </section>
     <section className="resultsSplit">
       <div className="sectorPanel"><span className="eyebrow">Diversification</span><h2>Sector mix</h2>{Object.entries(portfolio.sector_distribution).sort((a,b) => b[1]-a[1]).map(([sector,value]) => <div className="sectorBar" key={sector}><span>{sector}</span><i><b style={{width:`${value}%`}} /></i><strong>{value.toFixed(1)}%</strong></div>)}</div>
-      <div className="transparencyPanel"><span className="eyebrow lightEyebrow">Transparency</span><h2>What this result means.</h2><p>Data retrieved at {new Date(portfolio.data_retrieved_at).toLocaleString()}.</p>{portfolio.warnings.map((warning) => <p className="warning" key={warning}>{warning}</p>)}<ul>{portfolio.limitations.map((item) => <li key={item}>{item}</li>)}</ul><small>Sources: {portfolio.sources.join(" · ")}</small></div>
+      <div className="transparencyPanel"><span className="eyebrow lightEyebrow">Transparency</span><h2>What this result means.</h2><p>Data retrieved at {new Date(portfolio.data_retrieved_at).toLocaleString()}.</p>{portfolio.warnings.map((warning) => <p className="warning" key={warning}>{warning}</p>)}<ul>{portfolio.limitations.map((item) => <li key={item}>{item}</li>)}</ul><div className="glossary"><strong>What the numbers mean</strong><ul>{GLOSSARY.map(([term,def]) => <li key={term}><b>{term}:</b> {def}</li>)}</ul></div><small>Sources: {portfolio.sources.join(" · ")}</small></div>
     </section>
   </main>;
 }
 
-function Metric({label,value,note}:{label:string;value:string;note:string}) {
-  return <div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>;
+function Metric({label,value,note,hint}:{label:string;value:string;note:string;hint?:string}) {
+  return <div title={hint}><span>{label}</span><strong>{value}</strong><small>{note}</small></div>;
+}
+
+const CONFIDENCE_HINT = "How strongly this holding matches your priorities. High: matches 2 or more. Medium: matches 1. Low: matches none.";
+
+function AllocationRow({item}: {item: Allocation}) {
+  const [open, setOpen] = useState(false);
+  return <article className="allocationRow">
+    <span className="tickerBadge">{item.ticker}</span>
+    <div className="holdingIdentity"><strong>{item.name}</strong><small>{item.sector} · {item.asset_type.toUpperCase()}</small></div>
+    <div><strong>{item.weight.toFixed(2)}%</strong><small>{money(item.dollar_amount)}</small></div>
+    <div className="alignmentCell" title={CONFIDENCE_HINT}><strong>{item.alignment_score}/100</strong><small>{item.confidence} confidence</small></div>
+    <p>
+      {item.business_summary && <span className="businessBlurb">{item.business_summary}</span>}
+      {item.why_selected} <WhyThis.Toggle open={open} onToggle={() => setOpen((value) => !value)} />
+    </p>
+    {open && <WhyThis.Panel detail={item.detail} />}
+  </article>;
 }
