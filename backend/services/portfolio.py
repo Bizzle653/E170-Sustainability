@@ -10,7 +10,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from backend.models import Allocation, InvestorProfile, PortfolioRequest, PortfolioResponse
+from backend.models import Allocation, BenchmarkComparison, InvestorProfile, PortfolioRequest, PortfolioResponse
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio_optimizer import optimize_weights, portfolio_metrics, rounded_allocations
@@ -18,6 +18,28 @@ from backend.services.sustainability import alignment_score, compose_fund_snapsh
 
 
 UNIVERSE_PATH = Path(__file__).resolve().parents[1] / "data" / "investment_universe.json"
+
+BENCHMARK_TICKER = "SPY"
+BENCHMARK_NAME = "S&P 500 (SPY)"
+
+
+def benchmark_comparison(market: MarketDataService, aligned_index: pd.Index) -> BenchmarkComparison | None:
+    """Compute the same historical metrics for a broad market benchmark over the exact
+    same trading days as the portfolio being shown, so the comparison is apples-to-apples
+    rather than two different date ranges. Returns None rather than raising if the
+    benchmark itself is unavailable -- this is context, not a required part of the result."""
+    try:
+        benchmark_close = market.get_history(BENCHMARK_TICKER)
+    except MarketDataError:
+        return None
+    aligned = benchmark_close.reindex(aligned_index).dropna()
+    if len(aligned) < 60:
+        aligned = benchmark_close
+    try:
+        metrics = MarketDataService.metrics(aligned)
+    except MarketDataError:
+        return None
+    return BenchmarkComparison(ticker=BENCHMARK_TICKER, name=BENCHMARK_NAME, **metrics)
 
 # How much a candidate's historical risk-adjusted performance competes with its values
 # alignment when deciding which securities make the final cut, keyed off the same
@@ -164,6 +186,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     if result.warning:
         warnings.append(result.warning)
     metrics = portfolio_metrics(prices, result.weights)
+    benchmark = benchmark_comparison(market, prices.index)
     percentages, dollars = rounded_allocations(result.weights, request.investment_amount)
     allocations: list[Allocation] = []
     for item, percent, dollars_value in zip(evaluated, percentages, dollars):
@@ -207,6 +230,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         allocations=allocations,
         sustainability_alignment_score=round(weighted_alignment, 1),
         **metrics,
+        benchmark=benchmark,
         number_of_holdings=len(allocations),
         sector_distribution={key: round(value, 2) for key, value in sector_totals.items()},
         diversification_score=diversification_score,

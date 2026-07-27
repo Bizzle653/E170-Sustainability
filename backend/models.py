@@ -164,6 +164,14 @@ class SuggestedHolding(BaseModel):
     business_summary: str | None = None
 
 
+class BenchmarkComparison(BaseModel):
+    ticker: str
+    name: str
+    annualized_historical_return: float
+    annualized_volatility: float
+    maximum_drawdown: float
+
+
 class PortfolioAnalysisResponse(BaseModel):
     investor_profile: InvestorProfile
     total_value: float
@@ -171,6 +179,10 @@ class PortfolioAnalysisResponse(BaseModel):
     sustainability_alignment_score: float
     sector_distribution: dict[str, float]
     diversification_score: float
+    annualized_historical_return: float | None = None
+    annualized_volatility: float | None = None
+    maximum_drawdown: float | None = None
+    benchmark: BenchmarkComparison | None = None
     suggestions: list[SuggestedHolding]
     data_retrieved_at: str
     sources: list[str]
@@ -221,6 +233,7 @@ class PortfolioResponse(BaseModel):
     annualized_historical_return: float
     annualized_volatility: float
     maximum_drawdown: float
+    benchmark: BenchmarkComparison | None = None
     number_of_holdings: int
     sector_distribution: dict[str, float]
     diversification_score: float

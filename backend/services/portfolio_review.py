@@ -4,6 +4,9 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any
 
+import numpy as np
+import pandas as pd
+
 from backend.models import (
     HoldingAssessment,
     InvestorProfile,
@@ -13,7 +16,8 @@ from backend.models import (
 )
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
-from backend.services.portfolio import load_universe, select_candidates
+from backend.services.portfolio import benchmark_comparison, load_universe, select_candidates
+from backend.services.portfolio_optimizer import portfolio_metrics
 from backend.services.sustainability import alignment_score, compose_fund_snapshot
 
 
@@ -43,7 +47,7 @@ def _evaluate_holdings(
         seen.add(symbol)
         try:
             info = market.get_info(symbol)
-            market.get_history(symbol)
+            close = market.get_history(symbol)
             sustainability = market.get_sustainability(symbol)
         except MarketDataError as exc:
             excluded.append({"ticker": symbol, "reason": str(exc)})
@@ -72,6 +76,7 @@ def _evaluate_holdings(
             "sustainability_status": "available" if sustainability else "unavailable",
             "assessment": assessment,
             "business_summary": business_summary,
+            "history": close,
         })
 
     return evaluated, excluded
@@ -194,6 +199,20 @@ def analyze_portfolio(request: PortfolioAnalysisRequest, market: MarketDataServi
             "Green Canopy classification tags to match against your priorities."
         )
 
+    portfolio_return = portfolio_volatility = portfolio_drawdown = None
+    benchmark = None
+    if len(evaluated) >= 2:
+        prices = pd.concat([item["history"] for item in evaluated], axis=1, join="inner").dropna()
+        if len(prices) >= 60:
+            weights = np.array([item["dollar_amount"] / total_value for item in evaluated])
+            portfolio_perf = portfolio_metrics(prices, weights)
+            portfolio_return = portfolio_perf["annualized_historical_return"]
+            portfolio_volatility = portfolio_perf["annualized_volatility"]
+            portfolio_drawdown = portfolio_perf["maximum_drawdown"]
+            benchmark = benchmark_comparison(market, prices.index)
+        else:
+            warnings.append("Holdings didn't share enough overlapping price history to compute combined performance.")
+
     return PortfolioAnalysisResponse(
         investor_profile=profile,
         total_value=round(total_value, 2),
@@ -201,6 +220,10 @@ def analyze_portfolio(request: PortfolioAnalysisRequest, market: MarketDataServi
         sustainability_alignment_score=round(weighted_alignment, 1),
         sector_distribution={key: round(value, 2) for key, value in sector_totals.items()},
         diversification_score=diversification_score,
+        annualized_historical_return=portfolio_return,
+        annualized_volatility=portfolio_volatility,
+        maximum_drawdown=portfolio_drawdown,
+        benchmark=benchmark,
         suggestions=suggestions,
         data_retrieved_at=retrieved_at,
         sources=["Yahoo Finance via yfinance", "Green Canopy classification metadata"],

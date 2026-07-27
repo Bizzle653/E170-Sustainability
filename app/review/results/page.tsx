@@ -31,6 +31,7 @@ type Suggestion = {
   detail: AlignmentDetail;
   business_summary: string | null;
 };
+type Benchmark = { ticker: string; name: string; annualized_historical_return: number; annualized_volatility: number; maximum_drawdown: number };
 type Review = {
   investor_profile: { profile_name: string; profile_description: string; sustainability_priority_weights: Record<string, number> };
   total_value: number;
@@ -38,6 +39,10 @@ type Review = {
   sustainability_alignment_score: number;
   sector_distribution: Record<string, number>;
   diversification_score: number;
+  annualized_historical_return: number | null;
+  annualized_volatility: number | null;
+  maximum_drawdown: number | null;
+  benchmark: Benchmark | null;
   suggestions: Suggestion[];
   data_retrieved_at: string;
   sources: string[];
@@ -47,10 +52,13 @@ type Review = {
 };
 
 const money = (value: number) => value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
 const GLOSSARY: [string, string][] = [
   ["Alignment score", "How well this holding matches the priorities you chose, on a 0-100 scale. It is not a percentage of anything."],
   ["Confidence", "How strongly a holding matches your priorities — high means 2 or more matches, medium means 1, low means none."],
   ["Diversification score", "Higher means your money is spread across more industries instead of concentrated in one."],
+  ["Volatility", "How much your combined holdings have swung year to year historically. Higher is bumpier, not automatically worse."],
+  ["Maximum drawdown", "The worst peak-to-low drop over the historical period shown — a sense of the roughest ride you'd have lived through."],
 ];
 const CONFIDENCE_HINT = "How strongly this holding matches your priorities. High: matches 2 or more. Medium: matches 1. Low: matches none.";
 
@@ -118,6 +126,15 @@ export default function ReviewResultsPage() {
         <Metric label="Total reviewed" value={money(review.total_value)} note="Across matched holdings" />
         <Metric label="Holdings" value={String(review.holdings.length)} note="Successfully matched" />
         <Metric label="Diversification" value={`${review.diversification_score}/100`} note="Spread across sectors" hint="Higher means your money is spread across more industries instead of concentrated in one." />
+        {review.annualized_historical_return != null && (
+          <Metric label="Historical annual return" value={pct(review.annualized_historical_return)} note="Not a forecast" hint="Average yearly gain over the past 3 years, weighted by how much you hold of each. Past performance never guarantees future results." compare={review.benchmark && `S&P 500: ${pct(review.benchmark.annualized_historical_return)}`} />
+        )}
+        {review.annualized_volatility != null && (
+          <Metric label="Historical volatility" value={pct(review.annualized_volatility)} note="How bumpy the ride is" hint="How much your combined holdings have swung year to year. Higher means a bumpier ride, not necessarily a worse outcome." compare={review.benchmark && `S&P 500: ${pct(review.benchmark.annualized_volatility)}`} />
+        )}
+        {review.maximum_drawdown != null && (
+          <Metric label="Maximum drawdown" value={pct(review.maximum_drawdown)} note="Worst historical drop" hint="The biggest fall from a peak to a low point over the past 3 years — the worst-case dip you'd have lived through." compare={review.benchmark && `S&P 500: ${pct(review.benchmark.maximum_drawdown)}`} />
+        )}
       </section>
 
       <section className="resultsSection">
@@ -175,7 +192,7 @@ export default function ReviewResultsPage() {
         <div className="transparencyPanel">
           <span className="eyebrow lightEyebrow">Transparency</span>
           <h2>What this result means.</h2>
-          <p>Data retrieved at {new Date(review.data_retrieved_at).toLocaleString()}.</p>
+          <p>Data retrieved at {new Date(review.data_retrieved_at).toLocaleString()}. <Link href="/methodology" style={{color:"#d8f1a5"}}>Read the full methodology →</Link></p>
           {review.warnings.map((warning) => (
             <p className="warning" key={warning}>
               {warning}
@@ -203,12 +220,13 @@ export default function ReviewResultsPage() {
   );
 }
 
-function Metric({ label, value, note, hint }: { label: string; value: string; note: string; hint?: string }) {
+function Metric({ label, value, note, hint, compare }: { label: string; value: string; note: string; hint?: string; compare?: string | null | false }) {
   return (
     <div title={hint}>
       <span>{label}</span>
       <strong>{value}</strong>
       <small>{note}</small>
+      {compare && <small className="benchmarkNote">{compare}</small>}
     </div>
   );
 }
