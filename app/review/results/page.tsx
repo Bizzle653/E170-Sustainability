@@ -110,7 +110,7 @@ export default function ReviewResultsPage() {
         <div className="heroScore">
           <span>Alignment</span>
           <strong>{review.sustainability_alignment_score}</strong>
-          <small>Green Canopy score · not "percent sustainable"</small>
+          <small>Green Canopy score · not “percent sustainable”</small>
         </div>
       </header>
 
