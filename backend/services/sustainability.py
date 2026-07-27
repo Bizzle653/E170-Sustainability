@@ -234,3 +234,50 @@ def alignment_score(
             "business_summary_available": bool(summary_sentences) or bool(fund_evidence),
         },
     }
+
+
+def compose_portfolio_narrative(
+    holdings: list[dict[str, Any]],
+    sector_totals: dict[str, float],
+    weighted_alignment: float,
+    diversification_score: float,
+) -> str:
+    """A single readable paragraph summarizing a whole portfolio -- built entirely from
+    data already computed elsewhere (top holdings, sector mix, matched priorities), not
+    a language model. Reads like a personalized summary without calling anything live."""
+    if not holdings:
+        return ""
+
+    sentences: list[str] = []
+
+    top_sectors = sorted(sector_totals.items(), key=lambda item: -item[1])[:2]
+    if top_sectors:
+        sector_phrase = " and ".join(sector.lower() for sector, _ in top_sectors)
+        top_holdings = sorted(holdings, key=lambda h: -h["weight"])[:3]
+        names = [h["name"].rstrip(".") for h in top_holdings]
+        anchor = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+        sentences.append(f"This portfolio leans toward {sector_phrase}, anchored by {anchor}.")
+
+    priority_counts: dict[str, int] = {}
+    for holding in holdings:
+        for priority in holding.get("matched_priorities", []):
+            priority_counts[priority] = priority_counts.get(priority, 0) + 1
+    if priority_counts:
+        top_priority, top_count = max(priority_counts.items(), key=lambda item: item[1])
+        share = round(top_count / len(holdings) * 100)
+        sentences.append(f"{share}% of holdings were selected at least partly for supporting {top_priority}.")
+
+    if weighted_alignment >= 70:
+        align_word = "strongly"
+    elif weighted_alignment >= 50:
+        align_word = "moderately"
+    else:
+        align_word = "loosely"
+    sector_count = len(sector_totals)
+    sentences.append(
+        f"Overall it {align_word} reflects your stated priorities (alignment {weighted_alignment}/100), spread "
+        f"across {sector_count} sector{'s' if sector_count != 1 else ''} for a diversification score of "
+        f"{diversification_score}/100."
+    )
+
+    return " ".join(sentences)

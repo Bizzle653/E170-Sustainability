@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
+import { downloadCsv } from "@/lib/csv";
 
 type Holding = {
   ticker: string;
@@ -37,6 +38,7 @@ type Review = {
   total_value: number;
   holdings: Holding[];
   sustainability_alignment_score: number;
+  portfolio_narrative: string;
   sector_distribution: Record<string, number>;
   diversification_score: number;
   annualized_historical_return: number | null;
@@ -61,6 +63,17 @@ const GLOSSARY: [string, string][] = [
   ["Maximum drawdown", "The worst peak-to-low drop over the historical period shown — a sense of the roughest ride you'd have lived through."],
 ];
 const CONFIDENCE_HINT = "How strongly this holding matches your priorities. High: matches 2 or more. Medium: matches 1. Low: matches none.";
+
+function downloadReviewCsv(review: Review) {
+  const headers = ["Section", "Ticker", "Name", "Type", "Sector", "Weight %", "Dollar Amount", "Alignment Score", "Matched Priorities", "Note"];
+  const holdingRows = review.holdings.map((h) => [
+    "Your holding", h.ticker, h.name, h.asset_type, h.sector, h.weight, h.dollar_amount, h.alignment_score, h.matched_priorities.join("; "), h.flag ?? "",
+  ]);
+  const suggestionRows = review.suggestions.map((s) => [
+    "Suggestion", s.ticker, s.name, s.asset_type, s.sector, "", "", s.alignment_score, s.matched_priorities.join("; "), s.why_suggested,
+  ]);
+  downloadCsv(`green-canopy-review-${new Date().toISOString().slice(0, 10)}.csv`, headers, [...holdingRows, ...suggestionRows]);
+}
 
 export default function ReviewResultsPage() {
   const stored = useSyncExternalStore(
@@ -122,6 +135,12 @@ export default function ReviewResultsPage() {
         </div>
       </header>
 
+      {review.portfolio_narrative && (
+        <section className="resultsSection" style={{ paddingBottom: 0 }}>
+          <p className="resultNote" style={{ fontSize: 14, padding: "20px 24px", maxWidth: 900 }}>{review.portfolio_narrative}</p>
+        </section>
+      )}
+
       <section className="metricGrid compact">
         <Metric label="Total reviewed" value={money(review.total_value)} note="Across matched holdings" />
         <Metric label="Holdings" value={String(review.holdings.length)} note="Successfully matched" />
@@ -143,7 +162,10 @@ export default function ReviewResultsPage() {
             <span className="eyebrow">Your holdings</span>
             <h2>What you already own.</h2>
           </div>
-          <p>Weights total {review.holdings.reduce((sum, item) => sum + item.weight, 0).toFixed(2)}%</p>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ margin: 0 }}>Weights total {review.holdings.reduce((sum, item) => sum + item.weight, 0).toFixed(2)}%</p>
+            <button className="backButton navButton" style={{ marginTop: 10 }} onClick={() => downloadReviewCsv(review)}>Download CSV</button>
+          </div>
         </div>
         <div className="allocationTable">
           {review.holdings.map((item) => (

@@ -177,6 +177,7 @@ class PortfolioAnalysisResponse(BaseModel):
     total_value: float
     holdings: list[HoldingAssessment]
     sustainability_alignment_score: float
+    portfolio_narrative: str = ""
     sector_distribution: dict[str, float]
     diversification_score: float
     annualized_historical_return: float | None = None
@@ -230,6 +231,7 @@ class PortfolioResponse(BaseModel):
     total_investment_amount: float
     allocations: list[Allocation]
     sustainability_alignment_score: float
+    portfolio_narrative: str = ""
     annualized_historical_return: float
     annualized_volatility: float
     maximum_drawdown: float

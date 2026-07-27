@@ -14,7 +14,7 @@ from backend.models import Allocation, BenchmarkComparison, InvestorProfile, Por
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio_optimizer import optimize_weights, portfolio_metrics, rounded_allocations
-from backend.services.sustainability import alignment_score, compose_fund_snapshot
+from backend.services.sustainability import alignment_score, compose_fund_snapshot, compose_portfolio_narrative
 
 
 UNIVERSE_PATH = Path(__file__).resolve().parents[1] / "data" / "investment_universe.json"
@@ -223,12 +223,19 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         1,
     )
     retrieved_at = datetime.now(timezone.utc).isoformat()
+    narrative = compose_portfolio_narrative(
+        [{"name": a.name, "weight": a.weight, "matched_priorities": a.matched_priorities} for a in allocations],
+        dict(sector_totals),
+        round(weighted_alignment, 1),
+        diversification_score,
+    )
 
     return PortfolioResponse(
         investor_profile=profile,
         total_investment_amount=request.investment_amount,
         allocations=allocations,
         sustainability_alignment_score=round(weighted_alignment, 1),
+        portfolio_narrative=narrative,
         **metrics,
         benchmark=benchmark,
         number_of_holdings=len(allocations),

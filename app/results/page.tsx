@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
+import { downloadCsv } from "@/lib/csv";
 
 type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
@@ -13,11 +14,19 @@ type Allocation = {
 type Benchmark = {ticker: string; name: string; annualized_historical_return: number; annualized_volatility: number; maximum_drawdown: number};
 type Portfolio = {
   investor_profile: {profile_name: string; profile_description: string; risk_score: number; sustainability_priority_weights: Record<string, number>};
-  total_investment_amount: number; allocations: Allocation[]; sustainability_alignment_score: number;
+  total_investment_amount: number; allocations: Allocation[]; sustainability_alignment_score: number; portfolio_narrative: string;
   annualized_historical_return: number; annualized_volatility: number; maximum_drawdown: number; benchmark: Benchmark | null;
   number_of_holdings: number; sector_distribution: Record<string, number>; diversification_score: number;
   data_retrieved_at: string; sources: string[]; warnings: string[]; limitations: string[];
 };
+
+function downloadPortfolioCsv(portfolio: Portfolio) {
+  const headers = ["Ticker", "Name", "Type", "Sector", "Weight %", "Dollar Amount", "Shares", "Purchase Price", "Alignment Score", "Confidence", "Matched Priorities", "Why Selected"];
+  const rows = portfolio.allocations.map((a) => [
+    a.ticker, a.name, a.asset_type, a.sector, a.weight, a.dollar_amount, a.shares, a.purchase_price, a.alignment_score, a.confidence, a.matched_priorities.join("; "), a.why_selected,
+  ]);
+  downloadCsv(`green-canopy-portfolio-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+}
 
 const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
 const money = (value: number) => value.toLocaleString("en-US", {style: "currency", currency: "USD"});
@@ -43,6 +52,7 @@ export default function ResultsPage() {
   return <main className="resultsPage">
     <nav className="resultsNav"><Link className="brand" href="/portfolio"><span className="brandMark">⌁</span><span>Green Canopy</span></Link><div className="navActions"><Link className="backButton navButton" href="/">Generate another</Link><Link className="button buttonSmall" href="/portfolio">Take me home</Link></div></nav>
     <header className="resultsHero"><div><span className="eyebrow">Your Green Canopy portfolio</span><h1>{portfolio.investor_profile.profile_name}</h1><p>{portfolio.investor_profile.profile_description} Your strongest priorities were {topPriorities.join(", ")}.</p></div><div className="heroScore"><span>Alignment</span><strong>{portfolio.sustainability_alignment_score}</strong><small>Green Canopy score · not “percent sustainable”</small></div></header>
+    {portfolio.portfolio_narrative && <section className="resultsSection" style={{paddingBottom: 0}}><p className="resultNote" style={{fontSize: 14, padding: "20px 24px", maxWidth: 900}}>{portfolio.portfolio_narrative}</p></section>}
     <section className="metricGrid">
       <Metric label="Investment" value={money(portfolio.total_investment_amount)} note="Illustrative amount" />
       <Metric label="Historical annual return" value={pct(portfolio.annualized_historical_return)} note="Not a forecast" hint="Average yearly gain over the past 3 years. Past performance never guarantees future results." compare={portfolio.benchmark && `S&P 500: ${pct(portfolio.benchmark.annualized_historical_return)}`} />
@@ -51,7 +61,7 @@ export default function ResultsPage() {
       <Metric label="Holdings" value={String(portfolio.number_of_holdings)} note="2% minimum position" />
       <Metric label="Diversification" value={`${portfolio.diversification_score}/100`} note="Spread across sectors" hint="Higher means your money is spread across more industries instead of concentrated in one — a form of risk reduction." />
     </section>
-    <section className="resultsSection"><div className="resultsHeading"><div><span className="eyebrow">Allocation</span><h2>Why every holding belongs.</h2></div><p>Weights total {portfolio.allocations.reduce((sum,item) => sum + item.weight, 0).toFixed(2)}% · Dollars total {money(portfolio.allocations.reduce((sum,item) => sum + item.dollar_amount, 0))}</p></div>
+    <section className="resultsSection"><div className="resultsHeading"><div><span className="eyebrow">Allocation</span><h2>Why every holding belongs.</h2></div><div style={{textAlign: "right"}}><p style={{margin: 0}}>Weights total {portfolio.allocations.reduce((sum,item) => sum + item.weight, 0).toFixed(2)}% · Dollars total {money(portfolio.allocations.reduce((sum,item) => sum + item.dollar_amount, 0))}</p><button className="backButton navButton" style={{marginTop: 10}} onClick={() => downloadPortfolioCsv(portfolio)}>Download CSV</button></div></div>
       <div className="allocationTable">{portfolio.allocations.map((item) => <AllocationRow item={item} key={item.ticker} />)}</div>
     </section>
     <section className="resultsSplit">

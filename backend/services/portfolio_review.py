@@ -18,7 +18,7 @@ from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService, first_sentence
 from backend.services.portfolio import benchmark_comparison, load_universe, select_candidates
 from backend.services.portfolio_optimizer import portfolio_metrics
-from backend.services.sustainability import alignment_score, compose_fund_snapshot
+from backend.services.sustainability import alignment_score, compose_fund_snapshot, compose_portfolio_narrative
 
 
 ALIGNMENT_FLAG_THRESHOLD = 45
@@ -213,11 +213,19 @@ def analyze_portfolio(request: PortfolioAnalysisRequest, market: MarketDataServi
         else:
             warnings.append("Holdings didn't share enough overlapping price history to compute combined performance.")
 
+    narrative = compose_portfolio_narrative(
+        [{"name": h.name, "weight": h.weight, "matched_priorities": h.matched_priorities} for h in holdings],
+        dict(sector_totals),
+        round(weighted_alignment, 1),
+        diversification_score,
+    )
+
     return PortfolioAnalysisResponse(
         investor_profile=profile,
         total_value=round(total_value, 2),
         holdings=holdings,
         sustainability_alignment_score=round(weighted_alignment, 1),
+        portfolio_narrative=narrative,
         sector_distribution={key: round(value, 2) for key, value in sector_totals.items()},
         diversification_score=diversification_score,
         annualized_historical_return=portfolio_return,
