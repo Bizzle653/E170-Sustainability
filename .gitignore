@@ -52,3 +52,6 @@ dist/
 .wrangler/
 outputs/
 work/
+
+# local Claude Code dev-server launch config
+.claude/

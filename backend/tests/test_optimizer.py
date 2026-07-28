@@ -15,7 +15,7 @@ def sample_prices(columns=8):
 
 def test_weights_total_100_and_respect_maximum():
     profile = build_profile(QuestionnaireAnswers(max_concentration=0.2))
-    result = optimize_weights(sample_prices(), [70] * 8, profile, 0.2)
+    result = optimize_weights(sample_prices(), [70] * 8, [0.5] * 8, profile, 0.2)
     assert np.isclose(result.weights.sum(), 1)
     assert result.weights.max() <= 0.20001
     assert result.weights.min() >= 0.01999
@@ -29,6 +29,6 @@ def test_dollar_rounding_is_exact():
 
 def test_optimizer_failure_uses_documented_equal_weight_fallback():
     profile = build_profile(QuestionnaireAnswers())
-    result = optimize_weights(sample_prices(5), [60] * 5, profile, 0.2, force_failure=True)
+    result = optimize_weights(sample_prices(5), [60] * 5, [0.5] * 5, profile, 0.2, force_failure=True)
     assert result.warning
     assert np.allclose(result.weights, np.repeat(0.2, 5))

@@ -71,6 +71,22 @@ def _percentile_ranks(values: list[float]) -> list[float]:
     return ranks
 
 
+def _philosophy_adjustment(item: dict[str, Any], philosophy: str) -> float:
+    """Nudge candidate ranking to reflect how the investor wants their money to create
+    change, using only fields already in the universe file (exclusion-flag count and
+    asset type) rather than a fabricated "best in sector" or "improving over time"
+    judgment -- that data doesn't exist for us to draw on."""
+    if philosophy == "avoid_harm":
+        # Reward a clean negative-screen profile in general, not just the specific
+        # categories this investor personally chose to exclude.
+        return -0.6 * len(item.get("exclusions", []))
+    if philosophy == "fund_solutions":
+        # A single company operating the solution directly is a more direct bet than a
+        # diversified fund that merely includes it alongside hundreds of other holdings.
+        return 0.5 if item["type"] == "stock" else 0.0
+    return 0.0
+
+
 def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     priority = profile.sustainability_priority_weights
     match = sum(priority.get(tag, 0) for tag in item.get("tags", []))
@@ -80,7 +96,8 @@ def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     # this must stay tiny — at full weight it let top-asset ETFs (rank 1) outscore a real
     # priority-tag match and crowd every individual stock out of recommendations.
     rank_tiebreaker = 1 / (100 * max(1, item.get("rank", 9999)))
-    return match * 10 + diversified + rank_tiebreaker
+    philosophy_adjustment = _philosophy_adjustment(item, profile.company_preference)
+    return match * 10 + diversified + rank_tiebreaker + philosophy_adjustment
 
 
 def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
@@ -154,6 +171,9 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "alignment": alignment,
             "business_summary": business_summary,
             "risk_adjusted_return": risk_adjusted_return,
+            # Missing data defaults to 0 (no dividend), not an invented value --
+            # consistent with how a real non-dividend-paying growth stock reads.
+            "dividend_yield": info.get("dividendYield") or 0.0,
             "website": info.get("website"),
         })
 
@@ -169,8 +189,15 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     # they actually said they'd accept, not an arbitrary fixed ratio.
     financial_weight = FINANCIAL_WEIGHT_BY_TRADEOFF.get(profile.sustainability_tradeoff, 0.18)
     alignment_ranks = _percentile_ranks([item["alignment"]["alignment_score"] for item in evaluated])
-    financial_ranks = _percentile_ranks([item["risk_adjusted_return"] for item in evaluated])
-    for item, alignment_rank, financial_rank in zip(evaluated, alignment_ranks, financial_ranks):
+    growth_ranks = _percentile_ranks([item["risk_adjusted_return"] for item in evaluated])
+    income_ranks = _percentile_ranks([item["dividend_yield"] for item in evaluated])
+    # return_priority (from the "long-term growth" vs. "income and preservation" answer)
+    # decides what kind of financial performance counts toward the financial_weight share
+    # set above -- growth-focused investors are ranked mostly on risk-adjusted return,
+    # income-focused investors mostly on dividend yield percentile.
+    for item, alignment_rank, growth_rank, income_rank in zip(evaluated, alignment_ranks, growth_ranks, income_ranks):
+        financial_rank = profile.return_priority * growth_rank + (1 - profile.return_priority) * income_rank
+        item["income_rank"] = income_rank
         item["blended_rank"] = financial_weight * financial_rank + (1 - financial_weight) * alignment_rank
     evaluated.sort(key=lambda item: item["blended_rank"], reverse=True)
     evaluated = evaluated[:target_holdings]
@@ -181,6 +208,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     result = optimize_weights(
         prices,
         [item["alignment"]["alignment_score"] for item in evaluated],
+        [item["income_rank"] for item in evaluated],
         profile,
         profile.max_concentration,
     )

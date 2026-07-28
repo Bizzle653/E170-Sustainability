@@ -24,7 +24,7 @@ class QuestionnaireAnswers(BaseModel):
     horizon: Literal["under_3_years", "3_to_10_years", "10_plus_years"] = "10_plus_years"
     risk: Literal["move_to_safety", "stay_invested", "invest_more"] = "stay_invested"
     decline_reaction: Literal["sell", "hold", "buy_more"] = "hold"
-    philosophy: Literal["avoid_harm", "fund_solutions", "leaders", "transitioners", "combination"] = "combination"
+    philosophy: Literal["avoid_harm", "fund_solutions", "combination"] = "combination"
     tradeoff: Literal["none", "small", "moderate", "strong"] = "small"
     exclusions: list[str] = Field(default_factory=list)
     max_concentration: float = Field(default=0.20, ge=0.10, le=0.20)

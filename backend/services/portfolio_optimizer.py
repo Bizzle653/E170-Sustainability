@@ -19,6 +19,7 @@ class OptimizationResult:
 def optimize_weights(
     prices: pd.DataFrame,
     alignment: list[float],
+    income_ranks: list[float],
     profile: InvestorProfile,
     max_weight: float,
     force_failure: bool = False,
@@ -30,6 +31,7 @@ def optimize_weights(
     covariance = returns.cov().to_numpy() * 252
     n = len(annual_returns)
     sustainability = np.asarray(alignment, dtype=float) / 100
+    income = np.asarray(income_ranks, dtype=float)
     risk_penalty = 1.25 + (100 - profile.risk_score) / 18
     sustainability_bonus = {
         "none": 0.05,
@@ -37,12 +39,25 @@ def optimize_weights(
         "moderate": 0.28,
         "strong": 0.42,
     }[profile.sustainability_tradeoff]
+    # Growth-oriented expected return is already rewarded directly by the
+    # expected_return term below, so this only needs to add a nudge for
+    # income-oriented investors -- it fades to near-zero as return_priority
+    # rises toward "long-term growth" and strengthens toward "income and
+    # preservation", using each candidate's dividend-yield percentile rank
+    # (income_ranks) rather than any fabricated income score.
+    income_tilt = 0.18 * (1 - profile.return_priority)
 
     def objective(weights: np.ndarray) -> float:
         expected_return = float(weights @ annual_returns)
         variance = float(weights @ covariance @ weights)
         alignment_value = float(weights @ sustainability)
-        return -(expected_return - risk_penalty * variance + sustainability_bonus * alignment_value)
+        income_value = float(weights @ income)
+        return -(
+            expected_return
+            - risk_penalty * variance
+            + sustainability_bonus * alignment_value
+            + income_tilt * income_value
+        )
 
     bounds = [(0.02, max_weight)] * n
     initial = np.repeat(1 / n, n)

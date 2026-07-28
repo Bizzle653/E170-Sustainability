@@ -42,7 +42,7 @@ const exclusions = [
 ];
 const steps = [
   ["Your values", "What matters most to you?", "Choose up to three priorities. Order matters: your first choice receives the strongest weight."],
-  ["Your philosophy", "How should your money create change?", "Tell us whether you prefer avoiding harm, funding solutions, or backing leaders and transitioners."],
+  ["Your philosophy", "How should your money create change?", "Tell us whether you prefer avoiding harmful companies outright, funding solutions directly, or a combination of both."],
   ["Your boundaries", "What should your portfolio avoid?", "Explicit exclusions are treated as constraints, not suggestions."],
   ["Your objective", "What is this money for?", "Your goal helps balance long-term growth, stability, and income."],
   ["Your timeline", "When might you need this money?", "A longer runway can support more exposure to market movement."],
@@ -194,7 +194,7 @@ export default function Home() {
             {loading ? <div className="loadingState"><span className="loadingRing" /><span className="eyebrow">Building with care</span><h2>{loadingStages[loadingStage]}</h2><p>We’re retrieving a bounded candidate set and will clearly flag missing provider data.</p><div className="stageList">{loadingStages.map((stage, index) => <span className={index <= loadingStage ? "active" : ""} key={stage}>{index < loadingStage ? "✓" : index === loadingStage ? "•" : "○"} {stage}</span>)}</div></div> : <>
               <div><span className="eyebrow">{steps[step][0]}</span><h2>{steps[step][1]}</h2><p className="builderCopy">{steps[step][2]}</p></div>
               {step === 0 && <div className="choiceGrid">{priorities.map(([key, title, copy]) => <button className={`choiceCard ${answers.priorities.includes(key) ? "selected" : ""}`} onClick={() => toggleList("priorities", key, 3)} key={key}><span>{answers.priorities.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>{copy}</small></button>)}</div>}
-              {step === 1 && <OptionList value={answers.philosophy} options={[["avoid_harm","Avoid companies causing harm"],["fund_solutions","Fund direct solutions"],["leaders","Back sustainable leaders"],["transitioners","Support measurable transitioners"],["combination","Combine these approaches"]]} onChange={(philosophy) => setAnswers({...answers, philosophy})} />}
+              {step === 1 && <OptionList value={answers.philosophy} options={[["avoid_harm","Avoid companies causing harm"],["fund_solutions","Fund direct solutions"],["combination","Combine these approaches"]]} onChange={(philosophy) => setAnswers({...answers, philosophy})} />}
               {step === 2 && <div className="choiceGrid">{exclusions.map(([key, title]) => <button className={`choiceCard compact ${answers.exclusions.includes(key) ? "selected" : ""}`} onClick={() => toggleList("exclusions", key)} key={key}><span>{answers.exclusions.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>Exclude from consideration</small></button>)}</div>}
               {step === 3 && <OptionList value={answers.goal} options={[["long_term_growth","Long-term growth"],["growth_and_stability","Growth and stability"],["income_and_preservation","Income and preservation"]]} onChange={(goal) => setAnswers({...answers, goal})} />}
               {step === 4 && <OptionList value={answers.horizon} options={[["under_3_years","Under 3 years"],["3_to_10_years","3–10 years"],["10_plus_years","10+ years"]]} onChange={(horizon) => setAnswers({...answers, horizon})} />}
