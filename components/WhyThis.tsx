@@ -26,7 +26,14 @@ function Toggle({open, onToggle}: {open: boolean; onToggle: () => void}) {
   );
 }
 
-function Panel({detail}: {detail: AlignmentDetail}) {
+function Panel({detail, name, website}: {detail: AlignmentDetail; name: string; website?: string | null}) {
+  const topMatch = detail.priority_breakdown
+    .filter((item) => item.matched)
+    .sort((a, b) => b.profile_weight - a.profile_weight)[0];
+  const searchUrl = topMatch
+    ? `https://www.google.com/search?q=${encodeURIComponent(`"${name}" sustainability report ${topMatch.label}`)}`
+    : null;
+
   return (
     <div className="whyDetail">
       <p>{detail.explanation}</p>
@@ -55,6 +62,12 @@ function Panel({detail}: {detail: AlignmentDetail}) {
               <b>{field.label}:</b> {field.raw_value.toFixed(1)} <small>(lower is better)</small>
             </span>
           ))}
+        </div>
+      )}
+      {(website || searchUrl) && (
+        <div className="exploreLinks">
+          {website && <a href={website} target="_blank" rel="noopener noreferrer">Visit {name}&apos;s website →</a>}
+          {searchUrl && <a href={searchUrl} target="_blank" rel="noopener noreferrer">See how {name} addresses {topMatch!.label} →</a>}
         </div>
       )}
     </div>

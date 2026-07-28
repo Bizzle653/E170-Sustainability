@@ -76,6 +76,7 @@ def _evaluate_holdings(
             "sustainability_status": "available" if sustainability else "unavailable",
             "assessment": assessment,
             "business_summary": business_summary,
+            "website": info.get("website"),
             "history": close,
         })
 
@@ -134,6 +135,7 @@ def _build_suggestions(
             why_suggested=f"Supports {', '.join(matched)}, which you weren't otherwise holding.",
             detail=assessment["detail"],
             business_summary=business_summary,
+            website=info.get("website"),
         ))
     return suggestions
 
@@ -177,6 +179,7 @@ def analyze_portfolio(request: PortfolioAnalysisRequest, market: MarketDataServi
             flag=flag,
             detail=item["assessment"]["detail"],
             business_summary=item["business_summary"],
+            website=item["website"],
         ))
         sector_totals[item["sector"]] += weight
         weighted_alignment += score * weight / 100

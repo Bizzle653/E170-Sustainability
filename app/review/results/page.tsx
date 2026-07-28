@@ -21,6 +21,7 @@ type Holding = {
   flag: string | null;
   detail: AlignmentDetail;
   business_summary: string | null;
+  website: string | null;
 };
 type Suggestion = {
   ticker: string;
@@ -32,6 +33,7 @@ type Suggestion = {
   why_suggested: string;
   detail: AlignmentDetail;
   business_summary: string | null;
+  website: string | null;
 };
 type Benchmark = { ticker: string; name: string; annualized_historical_return: number; annualized_volatility: number; maximum_drawdown: number };
 type Review = {
@@ -272,7 +274,7 @@ function HoldingRow({ item }: { item: Holding }) {
         {!item.in_green_canopy_universe && " Outside Green Canopy's tracked universe."}{" "}
         <WhyThis.Toggle open={open} onToggle={() => setOpen((value) => !value)} />
       </p>
-      {open && <WhyThis.Panel detail={item.detail} />}
+      {open && <WhyThis.Panel detail={item.detail} name={item.name} website={item.website} />}
     </article>
   );
 }
@@ -300,7 +302,7 @@ function SuggestionRow({ item }: { item: Suggestion }) {
         {item.business_summary && <span className="businessBlurb">{item.business_summary}</span>}
         {item.why_suggested} <WhyThis.Toggle open={open} onToggle={() => setOpen((value) => !value)} />
       </p>
-      {open && <WhyThis.Panel detail={item.detail} />}
+      {open && <WhyThis.Panel detail={item.detail} name={item.name} website={item.website} />}
     </article>
   );
 }

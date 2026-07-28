@@ -10,7 +10,7 @@ type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
   dollar_amount: number; purchase_price: number; shares: number; alignment_score: number; confidence: string;
   matched_priorities: string[]; why_selected: string; sustainability_status: string; detail: AlignmentDetail;
-  business_summary: string | null;
+  business_summary: string | null; website: string | null;
 };
 type Benchmark = {ticker: string; name: string; annualized_historical_return: number; annualized_volatility: number; maximum_drawdown: number};
 type Portfolio = {
@@ -89,6 +89,6 @@ function AllocationRow({item}: {item: Allocation}) {
       {item.business_summary && <span className="businessBlurb">{item.business_summary}</span>}
       {item.why_selected} <WhyThis.Toggle open={open} onToggle={() => setOpen((value) => !value)} />
     </p>
-    {open && <WhyThis.Panel detail={item.detail} />}
+    {open && <WhyThis.Panel detail={item.detail} name={item.name} website={item.website} />}
   </article>;
 }

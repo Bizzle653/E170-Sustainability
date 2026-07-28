@@ -150,6 +150,7 @@ class HoldingAssessment(BaseModel):
     flag: str | None = None
     detail: AlignmentDetail
     business_summary: str | None = None
+    website: str | None = None
 
 
 class SuggestedHolding(BaseModel):
@@ -162,6 +163,7 @@ class SuggestedHolding(BaseModel):
     why_suggested: str
     detail: AlignmentDetail
     business_summary: str | None = None
+    website: str | None = None
 
 
 class BenchmarkComparison(BaseModel):
@@ -224,6 +226,7 @@ class Allocation(BaseModel):
     sustainability_status: str
     detail: AlignmentDetail
     business_summary: str | None = None
+    website: str | None = None
 
 
 class PortfolioResponse(BaseModel):

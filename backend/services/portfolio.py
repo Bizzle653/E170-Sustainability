@@ -154,6 +154,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             "alignment": alignment,
             "business_summary": business_summary,
             "risk_adjusted_return": risk_adjusted_return,
+            "website": info.get("website"),
         })
 
     if len(evaluated) < 5:
@@ -212,6 +213,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             sustainability_status="available" if item["sustainability"] else "unavailable",
             detail=item["alignment"]["detail"],
             business_summary=item["business_summary"],
+            website=item["website"],
         ))
 
     weighted_alignment = sum(a.alignment_score * a.weight / 100 for a in allocations)
