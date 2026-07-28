@@ -132,7 +132,7 @@ def _compose_explanation(
     unmatched_labels: list[str],
     esg_component: float | None,
     completeness: float,
-    asset_type: str,
+    diversification_bonus: float,
 ) -> str:
     sentences: list[str] = []
     if matched_labels:
@@ -156,10 +156,13 @@ def _compose_explanation(
             f"overall ESG risk, which nudges the score accordingly."
         )
 
-    if asset_type == "etf":
+    # Only mention the diversification credit when this fund actually earned more than
+    # the baseline every security gets -- i.e. its real current top holdings back up the
+    # priorities it's matched on, not just because it's fund-shaped.
+    if diversification_bonus > 3:
         sentences.append(
-            "As a fund, it also receives a small diversification credit for spreading exposure across many "
-            "underlying holdings instead of concentrating risk in one company."
+            "As a fund, it also receives a diversification credit here because its real current top holdings "
+            "confirm the priorities it's matched on, rather than spreading risk on an unverified basis."
         )
     return " ".join(sentences)
 
@@ -194,7 +197,15 @@ def alignment_score(
 
     esg_component = sum(esg_values) / len(esg_values) if esg_values else None
     completeness = min(1.0, len(raw) / 8) if raw else 0.0
-    diversification_bonus = 8 if asset_type == "etf" else 3
+    # A fund only earns extra credit beyond the baseline every security gets when its own
+    # real current top holdings actually confirm the priorities it's matched on (real
+    # fund_evidence), not simply for being fund-shaped -- an ETF carrying a curated tag
+    # that its live holdings don't back up gets no more credit than an individual stock.
+    if asset_type == "etf" and matched:
+        evidenced_matches = sum(1 for key in matched if key in (fund_evidence or {}))
+        diversification_bonus = 3 + 5 * (evidenced_matches / len(matched))
+    else:
+        diversification_bonus = 3
     score = 25 + tag_score * 0.52 + diversification_bonus
     if esg_component is not None:
         score += esg_component * 0.15 + completeness * 5
@@ -219,7 +230,7 @@ def alignment_score(
         "confidence": confidence,
         "limitations": [],
         "detail": {
-            "explanation": _compose_explanation(matched_labels, unmatched_labels, esg_component, completeness, asset_type),
+            "explanation": _compose_explanation(matched_labels, unmatched_labels, esg_component, completeness, diversification_bonus),
             "priority_breakdown": [
                 {
                     "key": key,
