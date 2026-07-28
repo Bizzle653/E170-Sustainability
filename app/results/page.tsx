@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
 import { downloadCsv } from "@/lib/csv";
+import { SiteNav } from "@/components/SiteNav";
 
 type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
@@ -50,7 +51,7 @@ export default function ResultsPage() {
 
   const topPriorities = Object.entries(portfolio.investor_profile.sustainability_priority_weights).filter(([, weight]) => weight > 0).sort((a,b) => b[1]-a[1]).map(([key]) => key.replaceAll("_"," "));
   return <main className="resultsPage">
-    <nav className="resultsNav"><Link className="brand" href="/portfolio"><span className="brandMark">⌁</span><span>Green Canopy</span></Link><div className="navActions"><Link className="backButton navButton" href="/">Generate another</Link><Link className="button buttonSmall" href="/portfolio">Take me home</Link></div></nav>
+    <SiteNav />
     <header className="resultsHero"><div><span className="eyebrow">Your Green Canopy portfolio</span><h1>{portfolio.investor_profile.profile_name}</h1><p>{portfolio.investor_profile.profile_description} Your strongest priorities were {topPriorities.join(", ")}.</p></div><div className="heroScore"><span>Alignment</span><strong>{portfolio.sustainability_alignment_score}</strong><small>Green Canopy score · not “percent sustainable”</small></div></header>
     {portfolio.portfolio_narrative && <section className="resultsSection" style={{paddingBottom: 0}}><p className="resultNote" style={{fontSize: 14, padding: "20px 24px", maxWidth: 900}}>{portfolio.portfolio_narrative}</p></section>}
     <section className="metricGrid">

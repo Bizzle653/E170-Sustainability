@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SiteNav } from "@/components/SiteNav";
 
 const CATEGORIES = [
   ["Climate", "Emissions, decarbonization, low-carbon energy"],
@@ -24,15 +25,7 @@ const STEPS: [string, string, string][] = [
 export default function MethodologyPage() {
   return (
     <main className="resultsPage">
-      <nav className="resultsNav">
-        <Link className="brand" href="/">
-          <span className="brandMark">⌁</span>
-          <span>Green Canopy</span>
-        </Link>
-        <div className="navActions">
-          <Link className="backButton navButton" href="/">Home</Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       <header className="resultsHero">
         <div>
@@ -77,11 +70,14 @@ export default function MethodologyPage() {
           alone, and never invented. That evidence is the same text you can see by clicking &quot;Why this?&quot;
           on any holding.
         </p>
-        <div className="priorityChecklist" style={{marginBottom: 28}}>
+        <div className="priorityChecklist" style={{marginBottom: 16}}>
           {CATEGORIES.map(([label, desc]) => (
             <span className="matched" key={label} title={desc}>{label}</span>
           ))}
         </div>
+        <p style={{maxWidth: 760, marginBottom: 24}}>
+          <Link href="/learn" style={{fontWeight: 800, color: "var(--forest-2)"}}>What do these categories actually mean? →</Link>
+        </p>
         <p style={{maxWidth: 760, color: "var(--muted)", lineHeight: 1.7}}>
           Coverage is honest, not complete: as of this writing, 113 of 955 tracked companies (about 12%) have at
           least one tag. The rest simply don&apos;t mention any of these 9 categories explicitly in their business

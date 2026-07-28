@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { SiteNav } from "@/components/SiteNav";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -104,17 +104,7 @@ export default function ReviewPage() {
 
   return (
     <main className="resultsPage">
-      <nav className="resultsNav">
-        <Link className="brand" href="/">
-          <span className="brandMark">⌁</span>
-          <span>Green Canopy</span>
-        </Link>
-        <div className="navActions">
-          <Link className="backButton navButton" href="/">
-            Home
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       <header className="resultsHero">
         <div>

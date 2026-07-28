@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
 import { downloadCsv } from "@/lib/csv";
+import { SiteNav } from "@/components/SiteNav";
 
 type Holding = {
   ticker: string;
@@ -105,20 +106,7 @@ export default function ReviewResultsPage() {
 
   return (
     <main className="resultsPage">
-      <nav className="resultsNav">
-        <Link className="brand" href="/">
-          <span className="brandMark">⌁</span>
-          <span>Green Canopy</span>
-        </Link>
-        <div className="navActions">
-          <Link className="backButton navButton" href="/review">
-            Review again
-          </Link>
-          <Link className="button buttonSmall" href="/">
-            Take me home
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       <header className="resultsHero">
         <div>
