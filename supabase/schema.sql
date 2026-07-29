@@ -17,6 +17,11 @@ create table if not exists public.portfolios (
 alter table public.profiles enable row level security;
 alter table public.portfolios enable row level security;
 
+revoke all on table public.profiles from anon;
+revoke all on table public.portfolios from anon;
+grant select, insert, update on table public.profiles to authenticated;
+grant select, insert, update on table public.portfolios to authenticated;
+
 drop policy if exists "Users can read their profile" on public.profiles;
 drop policy if exists "Users can create their profile" on public.profiles;
 drop policy if exists "Users can update their profile" on public.profiles;

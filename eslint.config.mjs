@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Local ChatGPT Sites scaffold (not part of the deployable app)
     ".tmp-sites-init/**",
+    ".pytest_cache/**",
+    ".venv/**",
   ]),
 ]);
 
