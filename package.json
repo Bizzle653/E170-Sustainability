@@ -12,6 +12,8 @@
     "lint": "eslint . --ignore-pattern .next"
   },
   "dependencies": {
+    "@hcaptcha/react-hcaptcha": "^2.0.2",
+    "@marsidev/react-turnstile": "^1.5.4",
     "@supabase/server": "^1.4.1",
     "@supabase/supabase-js": "^2.110.8",
     "next": "16.2.6",

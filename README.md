@@ -129,7 +129,13 @@ not handled or stored by Green Canopy.
 3. Copy `.env.example` to `.env.local` and set:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Add the production `/portfolio` and `/settings` URLs to the Supabase Auth
+4. If CAPTCHA protection is enabled in Supabase Auth, set:
+   - `NEXT_PUBLIC_CAPTCHA_PROVIDER` to `turnstile` or `hcaptcha`
+   - `NEXT_PUBLIC_CAPTCHA_SITE_KEY` to the public site key from that provider
+   Configure the same provider and its secret key under Supabase Authentication
+   > Bot and Abuse Protection. Add local and production hostnames to the
+   CAPTCHA provider's allowed domains.
+5. Add the production `/portfolio` and `/settings` URLs to the Supabase Auth
    redirect allow list.
 
 The login, profile, settings, password-reset, email-change, and logout interfaces
