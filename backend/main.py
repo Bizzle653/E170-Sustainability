@@ -194,5 +194,10 @@ def portfolio_analysis(request: PortfolioAnalysisRequest) -> PortfolioAnalysisRe
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
     """Send a message to the Green Canopy DeepSeek Agent and return a reply."""
-    reply = run_agent(request.message)
+    try:
+        reply = run_agent(request.message)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Agent error: {exc}") from exc
     return ChatResponse(reply=reply)

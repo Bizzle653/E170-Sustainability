@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
 from openai import OpenAI
@@ -34,14 +35,45 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-chat"  # DeepSeek-V4 is accessible via this model id
 
 
+def _load_deepseek_key() -> str:
+    """Return the DeepSeek API key from environment or local .env files.
+
+    Checks in order:
+      1. DEEPSEEK_API_KEY environment variable
+      2. .env.local file (key=value format, one per line)
+      3. .env file (same format)
+    """
+    key = os.environ.get("DEEPSEEK_API_KEY")
+    if key:
+        return key
+
+    # Try reading from .env.local or .env in the project root
+    root = Path(__file__).resolve().parent.parent  # backend/ → repo root
+    for env_file in (root / ".env.local", root / ".env"):
+        if not env_file.is_file():
+            continue
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if k == "DEEPSEEK_API_KEY" and v:
+                return v
+
+    raise RuntimeError(
+        "DEEPSEEK_API_KEY is not set. You can set it via:\n"
+        "  - Environment variable: $env:DEEPSEEK_API_KEY='sk-...' (PowerShell)\n"
+        "  - .env.local file in the project root: DEEPSEEK_API_KEY=sk-...\n"
+        "  - .env file in the project root: DEEPSEEK_API_KEY=sk-..."
+    )
+
+
 def _build_client() -> OpenAI:
-    api_key = os.environ.get("DEEPSEEK_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "DEEPSEEK_API_KEY environment variable is not set. "
-            "Set it before running the agent: $env:DEEPSEEK_API_KEY='sk-...' (PowerShell) "
-            "or export DEEPSEEK_API_KEY='sk-...' (bash)."
-        )
+    api_key = _load_deepseek_key()
     return OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
 
 
