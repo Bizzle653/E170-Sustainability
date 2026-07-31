@@ -19,11 +19,21 @@ from backend.models import (
     QuoteRequest,
     QuoteResponse,
 )
+from backend.agent import run_agent
+from pydantic import BaseModel, Field
 from backend.services.investor_profile import build_profile
 from backend.services.market_data import MarketDataError, MarketDataService
 from backend.services.portfolio import generate_portfolio, load_universe
 from backend.services.portfolio_review import analyze_portfolio
 from backend.services.sustainability import alignment_score
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4000)
+
+
+class ChatResponse(BaseModel):
+    reply: str
 
 
 app = FastAPI(
@@ -179,3 +189,10 @@ def portfolio_analysis(request: PortfolioAnalysisRequest) -> PortfolioAnalysisRe
         return analyze_portfolio(request, market_data)
     except MarketDataError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(request: ChatRequest) -> ChatResponse:
+    """Send a message to the Green Canopy DeepSeek Agent and return a reply."""
+    reply = run_agent(request.message)
+    return ChatResponse(reply=reply)

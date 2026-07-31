@@ -5,6 +5,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
 import { downloadCsv } from "@/lib/csv";
 import { SiteNav } from "@/components/SiteNav";
+import { DecisionAssistant } from "@/components/DecisionAssistant";
 
 type Allocation = {
   ticker: string; name: string; asset_type: string; sector: string; weight: number;
@@ -65,6 +66,7 @@ export default function ResultsPage() {
     <section className="resultsSection"><div className="resultsHeading"><div><span className="eyebrow">Allocation</span><h2>Why every holding belongs.</h2></div><div style={{textAlign: "right"}}><p style={{margin: 0}}>Weights total {portfolio.allocations.reduce((sum,item) => sum + item.weight, 0).toFixed(2)}% · Dollars total {money(portfolio.allocations.reduce((sum,item) => sum + item.dollar_amount, 0))}</p><button className="backButton navButton" style={{marginTop: 10}} onClick={() => downloadPortfolioCsv(portfolio)}>Download CSV</button></div></div>
       <div className="allocationTable">{portfolio.allocations.map((item) => <AllocationRow item={item} key={item.ticker} />)}</div>
     </section>
+    <section className="resultsSection"><DecisionAssistant /></section>
     <section className="resultsSplit">
       <div className="sectorPanel"><span className="eyebrow">Diversification</span><h2>Sector mix</h2>{Object.entries(portfolio.sector_distribution).sort((a,b) => b[1]-a[1]).map(([sector,value]) => <div className="sectorBar" key={sector}><span>{sector}</span><i><b style={{width:`${value}%`}} /></i><strong>{value.toFixed(1)}%</strong></div>)}</div>
       <div className="transparencyPanel"><span className="eyebrow lightEyebrow">Transparency</span><h2>What this result means.</h2><p>Data retrieved at {new Date(portfolio.data_retrieved_at).toLocaleString()}. <Link href="/methodology" style={{color:"#d8f1a5"}}>Read the full methodology →</Link></p>{portfolio.warnings.map((warning) => <p className="warning" key={warning}>{warning}</p>)}<ul>{portfolio.limitations.map((item) => <li key={item}>{item}</li>)}</ul><div className="glossary"><strong>What the numbers mean</strong><ul>{GLOSSARY.map(([term,def]) => <li key={term}><b>{term}:</b> {def}</li>)}</ul></div><small>Sources: {portfolio.sources.join(" · ")}</small></div>

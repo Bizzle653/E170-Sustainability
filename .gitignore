@@ -25,7 +25,12 @@ backend/data/.classify_checkpoint.json
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.key
+*.swp
+*.swo
+*~
 .agents/
 .tmp-sites-init/
 
@@ -35,9 +40,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env
+# env (all .env files except the example template)
 .env*
 !.env.example
+
+# IDE / editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
 
 # vercel
 .vercel

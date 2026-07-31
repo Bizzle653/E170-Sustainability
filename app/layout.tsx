@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
+import { ChatFloatingWidget } from "@/components/ChatFloatingWidget";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -24,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body><AuthProvider>{children}</AuthProvider></body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+        <ChatFloatingWidget />
+      </body>
     </html>
   );
 }
