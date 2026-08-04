@@ -77,13 +77,30 @@ Open [http://localhost:3000](http://localhost:3000). API documentation is at [ht
 
 The repository includes `api/backend.py`, which exposes the existing FastAPI application as a Vercel Python Function. Vercel rewrites public `/api/...` requests to that function while preserving the API path. In production the frontend uses same-origin requests, so it does not need `NEXT_PUBLIC_API_URL`.
 
+Before deploying, add this server-side environment variable in the Vercel project settings for Production, Preview, and Development as needed:
+
+```text
+DEEPSEEK_API_KEY=your-real-deepseek-api-key
+```
+
+Do not prefix this variable with `NEXT_PUBLIC_`; the key must remain available only to the Python backend. The public browser calls `/api/chat` on the deployed site, and that server-side function calls DeepSeek using the secret.
+
 Deploy the repository as one Vercel project:
 
 ```powershell
 vercel --prod
 ```
 
-Do not set `NEXT_PUBLIC_API_URL` to `localhost` in Vercel. If that variable already exists in the Vercel project, remove it and redeploy. It is only needed when the frontend and backend intentionally use different hosts.
+Do not set `NEXT_PUBLIC_API_URL` to `localhost` in Vercel. If that variable already exists in the Vercel project, remove it and redeploy. It is only needed when the frontend and backend intentionally use different hosts. As a safety net, production builds ignore a localhost value and fall back to the same-origin API.
+
+After deployment, verify both endpoints from the public site:
+
+```text
+https://your-project.vercel.app/api/health
+https://your-project.vercel.app/chat
+```
+
+The health endpoint should return a JSON response with `"status": "ok"`. Then send a message from `/chat` to verify the DeepSeek key is configured correctly.
 
 Additional direct frontend origins can be allowed with a comma-separated server-side environment variable:
 

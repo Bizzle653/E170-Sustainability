@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { apiUrl } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,9 +13,6 @@ type Message = {
   role: "assistant" | "error" | "user";
   content: string;
 };
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // ---------------------------------------------------------------------------
 // Slide-over Chat Drawer — reuses existing .modalBackdrop / .chatBubble /
@@ -39,12 +37,6 @@ export function ChatFloatingWidget() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setInput("");
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -73,7 +65,7 @@ export function ChatFloatingWidget() {
       setIsLoading(true);
 
       try {
-        const res = await fetch(`${API_BASE}/api/chat`, {
+        const res = await fetch(apiUrl("/api/chat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: trimmed }),
@@ -91,7 +83,7 @@ export function ChatFloatingWidget() {
           {
             id: `${Date.now()}-error`,
             role: "assistant",
-            content: `⚠️ Could not reach the assistant (${detail}). Make sure the backend is running at ${API_BASE}.`,
+            content: `Could not reach the assistant (${detail}). Please try again shortly.`,
           },
         ]);
       } finally {
@@ -113,7 +105,10 @@ export function ChatFloatingWidget() {
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setInput("");
+            setIsOpen(true);
+          }}
           className="button buttonSmall fixed bottom-6 right-6 z-50"
           style={{ display: "inline-flex" }}
           aria-label="Open AI Assistant"

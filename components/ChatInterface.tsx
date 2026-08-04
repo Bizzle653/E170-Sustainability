@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { apiUrl } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,9 +13,6 @@ type Message = {
   role: "assistant" | "error" | "user";
   content: string;
 };
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const SUGGESTIONS = [
   "How does Green Canopy build a sustainable portfolio?",
@@ -59,7 +57,7 @@ export function ChatInterface() {
       setIsLoading(true);
 
       try {
-        const res = await fetch(`${API_BASE}/api/chat`, {
+        const res = await fetch(apiUrl("/api/chat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: trimmed }),
@@ -77,7 +75,7 @@ export function ChatInterface() {
           {
             id: `${Date.now()}-error`,
             role: "assistant",
-            content: `⚠️ Could not reach the assistant (${detail}). Make sure the backend is running at ${API_BASE}.`,
+            content: `Could not reach the assistant (${detail}). Please try again shortly.`,
           },
         ]);
       } finally {
