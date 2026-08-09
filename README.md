@@ -75,7 +75,7 @@ Open [http://localhost:3000](http://localhost:3000). API documentation is at [ht
 
 ## Deploy on Vercel
 
-The repository includes `api/backend.py`, which exposes the existing FastAPI application as a Vercel Python Function. Vercel rewrites public `/api/...` requests to that function while preserving the API path. In production the frontend uses same-origin requests, so it does not need `NEXT_PUBLIC_API_URL`.
+The repository includes `api/index.py`, which exposes the existing FastAPI application through one Vercel Python Function. Vercel rewrites public `/api/...` requests to that function while preserving the requested FastAPI path. In production the frontend uses same-origin requests, so it does not need `NEXT_PUBLIC_API_URL`.
 
 Before deploying, add this server-side environment variable in the Vercel project settings for Production, Preview, and Development as needed:
 

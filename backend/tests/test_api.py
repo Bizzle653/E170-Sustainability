@@ -3,6 +3,7 @@ import pandas as pd
 from fastapi.testclient import TestClient
 
 import backend.main as main_module
+import api.index as vercel_entry
 from backend.models import CompanyResponse, SustainabilityPayload
 
 
@@ -58,6 +59,13 @@ def test_health_and_profile_response_validation():
     response = client.post("/api/profile", json={"answers": {"priorities": ["climate"], "risk": "stay_invested"}})
     assert response.status_code == 200
     assert response.json()["profile_name"]
+
+
+def test_vercel_entrypoint_restores_public_api_path():
+    client = TestClient(vercel_entry.app)
+    response = client.get("/api", params={"_path": "health"})
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "service": "Green Canopy API"}
 
 
 def test_production_origin_cors_preflight():

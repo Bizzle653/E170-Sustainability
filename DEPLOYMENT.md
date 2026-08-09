@@ -1,156 +1,160 @@
-# Green Canopy — Deployment Guide / 部署指南
+# Green Canopy Deployment Guide
 
-## 方式 A：Docker Compose 一键部署 (Any cloud VM)
+Green Canopy can run as a single Vercel project or as separate frontend and backend services. The Vercel deployment is the simplest option because the Next.js frontend and FastAPI backend share one origin.
 
-适合任意装有 Docker 的云服务器（AWS EC2, DigitalOcean, 阿里云 ECS 等）。
+## Option A: Vercel
 
-### 1. 准备环境变量
+### Prerequisites
+
+- A GitHub repository containing this project
+- A Vercel account connected to GitHub
+- A DeepSeek API key
+- Optional Supabase project credentials for authentication and persistence
+
+### Project structure
+
+Vercel detects the Next.js application at the repository root. It also detects `api/index.py` as the FastAPI entry point. A rewrite sends public `/api/*` requests to that single Python function while preserving the requested FastAPI path.
+
+```text
+Browser
+  -> Next.js pages on Vercel
+  -> /api/* on the same Vercel origin
+  -> api/index.py
+  -> backend.main:app
+  -> DeepSeek, Yahoo Finance, and optional Supabase services
+```
+
+Production does not require `NEXT_PUBLIC_API_URL` when the frontend and backend use the same Vercel project.
+
+### Configure the project
+
+1. Import the GitHub repository at [vercel.com](https://vercel.com).
+2. Keep the project root directory set to the repository root.
+3. Keep framework detection set to Next.js.
+4. Add the required environment variables under **Settings -> Environment Variables**.
+5. Deploy the `main` branch.
+
+Required server-side variable:
+
+| Variable | Required | Purpose |
+|---|---:|---|
+| `DEEPSEEK_API_KEY` | Yes | Authorizes server-side chatbot requests to DeepSeek. |
+
+Optional variables:
+
+| Variable | Required | Purpose |
+|---|---:|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | No | Enables Supabase authentication and persistence. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | No | Public Supabase browser client key. |
+| `GREEN_CANOPY_ALLOWED_ORIGINS` | No | Comma-separated additional frontend origins for split deployments. |
+| `NEXT_PUBLIC_API_URL` | No | External backend origin for an intentional split deployment. Omit for same-origin Vercel deployment. |
+
+Never expose `DEEPSEEK_API_KEY` through a variable prefixed with `NEXT_PUBLIC_`.
+
+### Deploy from GitHub
+
+When the Vercel project is connected to the GitHub repository, a push to `main` should create a production deployment automatically:
+
+```powershell
+git add -A
+git commit -m "Describe the deployment change"
+git push origin main
+```
+
+Confirm that the new commit appears under the Vercel project's **Deployments** tab. A successful Git push does not by itself prove that Vercel deployed the commit.
+
+### Deploy with the Vercel CLI
+
+From the repository root:
+
+```powershell
+npx vercel@latest link
+npx vercel@latest --prod
+```
+
+### Production verification
+
+Replace the placeholder domain with the active Vercel domain:
+
+```text
+https://your-project.vercel.app/
+https://your-project.vercel.app/api/health
+https://your-project.vercel.app/chat
+```
+
+Expected health response:
+
+```json
+{"status":"ok","service":"Green Canopy API"}
+```
+
+After the health check passes, send a chatbot message and test one market-data or portfolio endpoint.
+
+## Option B: Docker Compose
+
+Use this option on a VM with Docker and Docker Compose installed.
+
+### Configure environment variables
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入真实密钥
 ```
 
-| 变量 | 说明 |
-|---|---|
-| `DEEPSEEK_API_KEY` | DeepSeek API Key（必填） |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 项目 URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase Publishable Key |
-| `NEXT_PUBLIC_API_URL` | 前端访问后端的地址（Docker 内网默认 `http://backend:8000`） |
+Edit `.env` and add the required credentials. For a browser accessing a separately hosted backend, `NEXT_PUBLIC_API_URL` must be a browser-accessible URL. Do not use the Docker service name as a browser URL.
 
-> ⚠️ Docker 环境中，`NEXT_PUBLIC_API_URL` 应设为 `http://backend:8000`（容器间通信用 service name）。
-
-### 2. 一键启动
+### Start the services
 
 ```bash
 docker compose up -d --build
 ```
 
-### 3. 访问
+Default local addresses:
 
-- 前端：`http://你的服务器IP:3000`
-- 后端 API 文档：`http://你的服务器IP:8000/docs`
-- AI 聊天：`http://你的服务器IP:3000/chat`
+- Frontend: `http://localhost:3000`
+- API documentation: `http://localhost:8000/docs`
+- Chat page: `http://localhost:3000/chat`
 
----
+## Option C: Split Vercel and Python Hosting
 
-## Deployment Method A: Docker Compose (Any cloud VM)
+The frontend can run on Vercel while FastAPI runs on Render, Railway, or another Python host.
 
-Suitable for any cloud VM with Docker installed (AWS EC2, DigitalOcean, etc.).
+Backend configuration example:
 
-### 1. Prepare environment variables
-
-```bash
-cp .env.example .env
-# Edit .env with your real credentials
+```text
+Build command: pip install -r backend/requirements.txt
+Start command: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
 ```
 
-> ⚠️ In Docker, set `NEXT_PUBLIC_API_URL=http://backend:8000` for inter-container communication.
+Set these backend variables:
 
-### 2. One-command startup
-
-```bash
-docker compose up -d --build
+```text
+DEEPSEEK_API_KEY=your-server-side-key
+GREEN_CANOPY_ALLOWED_ORIGINS=https://your-frontend.vercel.app
 ```
 
-### 3. Access
+Set this frontend build variable to the public backend origin:
 
-- Frontend: `http://your-server-ip:3000`
-- API docs: `http://your-server-ip:8000/docs`
-- AI Chat: `http://your-server-ip:3000/chat`
-
----
-
-## 方式 B：免费 Serverless 部署 / Free Serverless Deployment
-
-如果你不想购买云服务器，可以分别将前后端部署到免费平台。
-
-### 前端 → Vercel（免费）
-
-1. 将项目推送到 GitHub
-2. 在 [vercel.com](https://vercel.com) 导入仓库
-3. 在 Vercel 项目 Settings → Environment Variables 中添加：
-
-   | Key | Value |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | 你的 Supabase URL |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 你的 Supabase Key |
-   | `NEXT_PUBLIC_API_URL` | 后端的公网地址（如 `https://your-app.onrender.com`） |
-
-   > 💡 如果使用 Vercel 自带的 `api/backend.py` Serverless Function 作为后端，则不需要设置 `NEXT_PUBLIC_API_URL`（同源请求）。
-
-4. 部署 → 访问 `https://你的项目名.vercel.app`
-
-### 后端 → Render / Railway（免费额度）
-
-**Render**（`render.com`）：
-1. 新建 Web Service → 连接 GitHub 仓库
-2. Build Command: `pip install -r backend/requirements.txt`
-3. Start Command: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-4. 添加环境变量：
-   - `DEEPSEEK_API_KEY`
-   - `GREEN_CANOPY_ALLOWED_ORIGINS=https://你的vercel域名.vercel.app`
-5. 获得公网 URL 如 `https://green-canopy.onrender.com`
-
-**Railway**（`railway.app`）：
-1. 新建 Project → 连接 GitHub
-2. Root Directory 设为 `/`
-3. 添加 `DEEPSEEK_API_KEY` 环境变量
-4. 自动检测 Python 并构建
-
----
-
-## B: Free Serverless (Vercel + Render / Railway)
-
-### Frontend → Vercel (free)
-
-1. Push to GitHub
-2. Import repo at [vercel.com](https://vercel.com)
-3. Add env vars in Vercel Settings:
-
-   | Key | Value |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | your Supabase URL |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | your key |
-
-   > 💡 If using Vercel's built-in `api/backend.py` function, omit `NEXT_PUBLIC_API_URL` (same-origin).
-
-### Backend → Render (free tier)
-
-1. New Web Service → connect GitHub
-2. Build: `pip install -r backend/requirements.txt`
-3. Start: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-4. Env vars: `DEEPSEEK_API_KEY`, `GREEN_CANOPY_ALLOWED_ORIGINS`
-
----
-
-## 架构说明 / Architecture
-
-```
-┌──────────────┐     HTTP (8080)     ┌──────────────┐
-│   Next.js    │ ──────────────────→ │   FastAPI    │
-│  (Vercel /   │ ←────────────────── │  (Render /   │
-│   Docker)    │     JSON responses  │   Docker)    │
-└──────┬───────┘                     └──────┬───────┘
-       │                                    │
-       │  Supabase Auth / DB                │  yfinance
-       ▼                                    ▼
-┌──────────────┐                     ┌──────────────┐
-│   Supabase   │                     │  Yahoo       │
-│  (cloud)     │                     │  Finance     │
-└──────────────┘                     └──────────────┘
+```text
+NEXT_PUBLIC_API_URL=https://your-python-backend.example.com
 ```
 
----
+## Troubleshooting
 
-## 所需环境变量清单 / Required Environment Variables
+### The website opens but `/api/health` returns 500
 
-所有平台（Docker / Vercel / Render）都需要配置以下变量：
+- Confirm the latest Git commit produced a successful Vercel deployment.
+- Inspect the latest deployment's build logs and Python function runtime logs.
+- Confirm `api/index.py` exists and exports a top-level FastAPI variable named `app`.
+- Confirm root `requirements.txt` includes every imported Python dependency.
+- Confirm the configured Python version in `.python-version` is supported by Vercel.
 
-| 变量 | 必需 | 用途 |
-|---|---|---|
-| `DEEPSEEK_API_KEY` | ✅ | AI Copilot 对话功能 |
-| `NEXT_PUBLIC_SUPABASE_URL` | 推荐 | 用户认证与数据持久化 |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 推荐 | Supabase 客户端密钥 |
-| `NEXT_PUBLIC_API_URL` | 视情况 | 前后端分离时设置；同源部署可不设 |
-| `GREEN_CANOPY_ALLOWED_ORIGINS` | 可选 | 额外允许的跨域来源（逗号分隔） |
+### The browser calls localhost in production
+
+- Remove `NEXT_PUBLIC_API_URL` if the frontend and FastAPI backend share one Vercel project.
+- Redeploy after changing any `NEXT_PUBLIC_` environment variable because Next.js embeds it at build time.
+
+### The chatbot returns a service configuration error
+
+- Confirm `DEEPSEEK_API_KEY` exists in the Production environment.
+- Redeploy after adding or changing the variable.
+- Keep the key server-side and never commit it to Git.
