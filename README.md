@@ -158,6 +158,15 @@ The backend retrieves approximately three years of auto-adjusted daily closing p
 
 In-memory cache lifetimes are 15 minutes for company/quote information, 12 hours for price history, and 24 hours for sustainability responses.
 
+The DeepSeek chatbot can also call the internal `get_yfinance_data` function tool. It supports:
+
+- current quote fields such as price, previous close, daily range, volume, and market capitalization
+- company or fund profiles
+- bounded, auto-adjusted OHLCV price history with selectable periods and intervals
+- ETF and mutual-fund top holdings when Yahoo Finance provides them
+
+The tool validates ticker syntax, restricts history parameters, caps returned rows, and includes the data source and UTC retrieval time in every response. It is an internal model tool exposed through `POST /api/chat`, not a separate public HTTP endpoint.
+
 ## Sustainability-data limitations
 
 Yahoo discontinued its free ESG/sustainability API endpoint (it now returns HTTP 404 for every ticker), so third-party ESG data is currently unavailable across the board. The scoring code still supports it if Yahoo restores the endpoint, but alignment scores today are driven entirely by Green Canopy's own classification tags. Missing sustainability values are never replaced with zero or fabricated scores.

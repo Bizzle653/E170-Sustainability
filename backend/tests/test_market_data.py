@@ -46,3 +46,11 @@ def test_empty_price_history_raises_visible_error():
     service = MarketDataService(lambda symbol: FakeTicker(symbol, empty=True))
     with pytest.raises(MarketDataError, match="empty"):
         service.company("TEST")
+
+
+def test_history_frame_rejects_unsupported_ranges_before_fetching():
+    service = MarketDataService(lambda symbol: FakeTicker(symbol))
+    with pytest.raises(MarketDataError, match="period"):
+        service.get_history_frame("TEST", period="forever", interval="1d")
+    with pytest.raises(MarketDataError, match="interval"):
+        service.get_history_frame("TEST", period="1mo", interval="4h")

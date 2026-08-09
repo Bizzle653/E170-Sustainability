@@ -79,6 +79,12 @@ class MarketDataService:
     INFO_TTL = 15 * 60
     HISTORY_TTL = 12 * 60 * 60
     SUSTAINABILITY_TTL = 24 * 60 * 60
+    SUPPORTED_HISTORY_PERIODS = frozenset({
+        "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "3y", "5y", "10y", "ytd", "max",
+    })
+    SUPPORTED_HISTORY_INTERVALS = frozenset({
+        "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo",
+    })
 
     def __init__(self, ticker_factory: Callable[[str], Any] = yf.Ticker) -> None:
         self.ticker_factory = ticker_factory
@@ -106,21 +112,40 @@ class MarketDataService:
 
     def get_history(self, symbol: str) -> pd.Series:
         symbol = symbol.upper().strip()
+        history = self.get_history_frame(symbol, period="3y", interval="1d")
+        close = pd.to_numeric(history["Close"], errors="coerce").dropna()
+        if len(close) < 60:
+            raise MarketDataError(f"Insufficient price history for {symbol}")
+        close.name = symbol
+        return close
 
-        def load() -> pd.Series:
+    def get_history_frame(self, symbol: str, period: str = "1mo", interval: str = "1d") -> pd.DataFrame:
+        """Return an auto-adjusted yfinance history frame for an approved range."""
+        symbol = symbol.upper().strip()
+        period = period.lower().strip()
+        interval = interval.lower().strip()
+        if period not in self.SUPPORTED_HISTORY_PERIODS:
+            raise MarketDataError(f"Unsupported history period: {period}")
+        if interval not in self.SUPPORTED_HISTORY_INTERVALS:
+            raise MarketDataError(f"Unsupported history interval: {interval}")
+
+        def load() -> pd.DataFrame:
             try:
-                history = self._ticker(symbol).history(period="3y", interval="1d", auto_adjust=True)
+                history = self._ticker(symbol).history(
+                    period=period,
+                    interval=interval,
+                    auto_adjust=True,
+                )
             except Exception as exc:
                 raise MarketDataError(f"Price history unavailable for {symbol}: {exc}") from exc
             if history is None or history.empty or "Close" not in history:
                 raise MarketDataError(f"Price history is empty for {symbol}")
-            close = pd.to_numeric(history["Close"], errors="coerce").dropna()
-            if len(close) < 60:
-                raise MarketDataError(f"Insufficient price history for {symbol}")
-            close.name = symbol
-            return close
+            return history.copy()
 
-        return self.cache.get_or_set(f"history:{symbol}", self.HISTORY_TTL, load)
+        intraday = interval.endswith("m") or interval.endswith("h")
+        ttl = self.INFO_TTL if intraday else self.HISTORY_TTL
+        cache_key = f"history-frame:{symbol}:{period}:{interval}"
+        return self.cache.get_or_set(cache_key, ttl, load)
 
     def get_sustainability(self, symbol: str) -> dict[str, Any]:
         symbol = symbol.upper().strip()
