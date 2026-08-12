@@ -35,6 +35,7 @@ backend/
   data/
     investment_universe.json
     classification_updates.json
+    classification_agent_state.json
     import_fortune_universe.py
   tests/                   Offline mocked test suite
   requirements.txt
@@ -118,6 +119,7 @@ For autonomous scheduled classification, add `DEEPSEEK_API_KEY` as a GitHub Acti
 ```powershell
 .\.venv\Scripts\python.exe -m pytest backend\tests -q
 npm run build
+npm run test:frontend
 ```
 
 ## API
@@ -127,6 +129,7 @@ npm run build
 - `GET /api/universe/search?q=microsoft`
 - `GET /api/classifications/updates`
 - `GET /api/classifications/{ticker}`
+- `GET /api/agent/status`
 - `GET /api/company/{ticker}`
 - `POST /api/company/analyze`
 - `POST /api/profile`
@@ -187,11 +190,15 @@ For each selected company or ETF, the agent:
 3. follows the official website from the market profile and looks for bounded sustainability, ESG, climate, impact, or annual-report evidence;
 4. extracts text from supported official HTML pages and PDFs;
 5. asks DeepSeek to assess every Green Canopy category using only the numbered evidence bundle;
-6. rejects unsupported sources, low-confidence changes, and changes without cited evidence;
-7. directly applies accepted additions or removals to `investment_universe.json`;
-8. versions the universe and publishes a detailed record to `classification_updates.json`.
+6. requires short exact quotations that the program can find in the cited source text;
+7. sends proposed additions and removals through a separate conservative model-verification pass;
+8. rejects incomplete responses, unsupported quotes, low-confidence changes, single-source changes when multiple sources are available, and removals based only on missing evidence;
+9. directly applies accepted additions or removals to `investment_universe.json`;
+10. versions the universe and publishes a detailed record to `classification_updates.json`.
 
-There is no manual approval step. The automatic-change threshold defaults to 80%. Evidence that does not clear the threshold leaves the current classification unchanged. Every applied change records the old and new labels, rationale, confidence, evidence, retrieval time, model, possible claim conflicts, and portfolio-impact limitation. Public announcements are available at `/classification-updates` and through the classification API.
+There is no manual approval step. The automatic-addition threshold defaults to 80%, while removals require at least 90%. Evidence that does not clear every deterministic and model-verification gate leaves the current classification unchanged. Every applied change records the old and new labels, rationale, confidence, exact quotes, source-content hashes, retrieval time, model, policy and prompt versions, possible claim conflicts, and portfolio-impact limitation. Public announcements are paginated at `/classification-updates` and through the classification API.
+
+Legacy static labels are explicitly treated as unreviewed until the Agent verifies their current supporting evidence. Unreviewed or stale labels receive reduced scoring weight and can never produce a high-confidence alignment result. Coverage, the latest run, and the bounded retry queue are public at `/agent-status`.
 
 Run a dry research pass locally:
 
@@ -205,9 +212,9 @@ Apply changes and publish announcements into the local data files:
 .\.venv\Scripts\python.exe -m backend.classification_agent --tickers MSFT,ICLN --apply
 ```
 
-`.github/workflows/sustainability-intelligence-agent.yml` runs the same agent daily in bounded batches and commits durable classification metadata back to the repository. The connected Vercel Git integration automatically deploys commits pushed to `main`, including new public classification announcements. The workflow can also be run manually with specific tickers from the GitHub Actions page.
+`.github/workflows/sustainability-intelligence-agent.yml` runs the same agent daily in bounded batches of 20, prioritizing retries and unreviewed securities whose current metadata already affects scores. Successful results are published even when another security in the batch fails; failures enter an exponential-backoff retry queue. The connected Vercel Git integration automatically deploys meaningful classification changes pushed to `main`. Operational-state-only commits are intentionally skipped by Vercel and are read by the status API directly from the public repository. The workflow can also be run manually with specific tickers from the GitHub Actions page.
 
-The official-site collector rejects non-public network destinations, follows a bounded number of redirects and documents, caps response sizes, and treats retrieval failures as unavailable evidence rather than inventing a result. A label remains Green Canopy classification metadata—not a third-party ESG rating—even after the AI agent updates it.
+The official-site collector rejects non-public network destinations, restricts followed research links to the issuer's host or subdomains, streams bounded response sizes, follows a bounded number of redirects and documents, and treats retrieval failures as unavailable evidence rather than inventing a result. A label remains Green Canopy classification metadata—not a third-party ESG rating—even after the AI agent updates it.
 
 ## Sustainability-data limitations
 
@@ -222,3 +229,9 @@ Category tags in `investment_universe.json` are Green Canopy classification meta
 Investment selection and allocation remain deterministic; no language model chooses securities or sets portfolio weights. Generative AI is used for two bounded purposes: the explanatory chatbot and the autonomous classification agent's interpretation of retrieved evidence. The classification agent can change Green Canopy metadata, but it cannot invent sources: production changes require valid evidence IDs collected by the program and a configured confidence threshold. Every change is versioned and announced publicly.
 
 AI-generated classification can still be wrong or incomplete. Official company publications are self-reported, top-holdings coverage may be partial, reports may be stale, and a model can misinterpret legitimate evidence. The public change log makes those limitations inspectable and the Git history makes every classification change reversible. AI output must never be presented as financial advice, a third-party ESG rating, or a guarantee of future performance.
+
+## Security and automated quality checks
+
+Costly public endpoints use per-client request limits, and a single chatbot request has hard caps on model turns, tool calls, and tool-output size. The application limiter is a server-instance safety net; production usage and DeepSeek billing limits should still be monitored at the providers because serverless instances do not share memory.
+
+`.github/workflows/ci.yml` runs the Python tests, ESLint, frontend interaction tests, the production build, and a production-dependency security audit on every pull request and push to `main`.

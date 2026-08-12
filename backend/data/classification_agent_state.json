@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "checks": {
+    "MSFT": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T04:47:10.665388+00:00",
+      "changed": false,
+      "confidence": 0.9,
+      "evidence_source_count": 3
+    }
+  },
+  "retry_queue": [],
+  "last_run": {
+    "started_at": "2026-08-12T04:47:10.665388+00:00",
+    "completed_at": "2026-08-12T04:47:10.665388+00:00",
+    "status": "succeeded",
+    "selected": 1,
+    "succeeded": 1,
+    "changed": 0,
+    "failed": 0
+  }
+}

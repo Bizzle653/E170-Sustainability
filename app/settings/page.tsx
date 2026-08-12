@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AccountGate } from "@/components/AccountGate";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/components/AuthProvider";
@@ -17,6 +18,7 @@ export default function SettingsPage() {
 }
 
 function SettingsContent() {
+  const router = useRouter();
   const { user } = useAuth();
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [marketAlerts, setMarketAlerts] = useState(false);
@@ -226,7 +228,7 @@ function SettingsContent() {
             onClick={() => {
               localStorage.removeItem("greenCanopyPortfolio");
               localStorage.removeItem("greenCanopyQuotes");
-              window.location.href = "/";
+              router.push("/");
             }}
           >
             Clear this device

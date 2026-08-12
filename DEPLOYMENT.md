@@ -47,6 +47,7 @@ Optional variables:
 | `NEXT_PUBLIC_SUPABASE_URL` | No | Enables Supabase authentication and persistence. |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | No | Public Supabase browser client key. |
 | `GREEN_CANOPY_ALLOWED_ORIGINS` | No | Comma-separated additional frontend origins for split deployments. |
+| `GREEN_CANOPY_AGENT_STATE_URL` | No | Overrides the public GitHub state file used by `/api/agent/status`. |
 | `NEXT_PUBLIC_API_URL` | No | External backend origin for an intentional split deployment. Omit for same-origin Vercel deployment. |
 
 Never expose `DEEPSEEK_API_KEY` through a variable prefixed with `NEXT_PUBLIC_`.
@@ -61,7 +62,7 @@ git commit -m "Describe the deployment change"
 git push origin main
 ```
 
-Confirm that the new commit appears under the Vercel project's **Deployments** tab. A successful Git push does not by itself prove that Vercel deployed the commit.
+Confirm that the new commit appears under the Vercel project's **Deployments** tab. A successful Git push does not by itself prove that Vercel deployed the commit. Commits that only update `classification_agent_state.json` are intentionally skipped to avoid unnecessary production builds; the live status API reads that public state directly from GitHub.
 
 ### Deploy with the Vercel CLI
 

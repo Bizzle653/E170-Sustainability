@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from backend.models import InvestorProfile
@@ -174,13 +175,31 @@ def alignment_score(
     asset_type: str,
     business_summary: str | None = None,
     fund_evidence: dict[str, str] | None = None,
+    classification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     raw = raw or {}
     summary_sentences = split_sentences(business_summary)
     active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
     matched = [key for key in active_priorities if key in tags]
     unmatched = [key for key in active_priorities if key not in tags]
-    tag_score = sum(profile.sustainability_priority_weights.get(key, 0) for key in matched) * 100
+    classification = classification or {}
+    verified_at_raw = classification.get("verified_at")
+    verified_at = None
+    if verified_at_raw:
+        try:
+            verified_at = datetime.fromisoformat(str(verified_at_raw).replace("Z", "+00:00"))
+            if not verified_at.tzinfo:
+                verified_at = verified_at.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            verified_at = None
+    if classification.get("status") != "agent_verified":
+        classification_status = "unreviewed"
+    elif not verified_at or verified_at < datetime.now(timezone.utc) - timedelta(days=180):
+        classification_status = "stale"
+    else:
+        classification_status = "agent_verified"
+    provenance_weight = 1.0 if classification_status == "agent_verified" else 0.65 if classification_status == "stale" else 0.45
+    tag_score = sum(profile.sustainability_priority_weights.get(key, 0) for key in matched) * 100 * provenance_weight
 
     esg_fields: list[dict[str, Any]] = []
     esg_values: list[float] = []
@@ -215,11 +234,14 @@ def alignment_score(
     # of the user's own priorities this holding actually matches (plus ESG coverage as a
     # bonus path, dormant today but ready if Yahoo restores the data).
     strong_esg_coverage = bool(matched) and completeness >= 0.9
-    confidence = (
-        "high" if len(matched) >= 2 or strong_esg_coverage
-        else "medium" if matched or raw
-        else "low"
-    )
+    if classification_status != "agent_verified":
+        confidence = "low"
+    else:
+        confidence = (
+            "high" if (len(matched) >= 2 and classification.get("confidence", 0) >= 0.8) or strong_esg_coverage
+            else "medium" if matched or raw
+            else "low"
+        )
 
     matched_labels = [PRIORITY_LABELS.get(key, key.replace("_", " ")) for key in matched]
     unmatched_labels = [PRIORITY_LABELS.get(key, key.replace("_", " ")) for key in unmatched]
@@ -228,7 +250,13 @@ def alignment_score(
         "alignment_score": score,
         "matched_priorities": matched_labels,
         "confidence": confidence,
-        "limitations": [],
+        "limitations": (
+            [] if classification_status == "agent_verified"
+            else [
+                "Green Canopy's autonomous Agent has not recently verified these classification tags; "
+                "their score contribution is reduced and confidence is low."
+            ]
+        ),
         "detail": {
             "explanation": _compose_explanation(matched_labels, unmatched_labels, esg_component, completeness, diversification_bonus),
             "priority_breakdown": [
@@ -243,6 +271,8 @@ def alignment_score(
             ],
             "esg_snapshot": esg_fields,
             "business_summary_available": bool(summary_sentences) or bool(fund_evidence),
+            "classification_status": classification_status,
+            "classification_verified_at": verified_at.isoformat() if verified_at else None,
         },
     }
 

@@ -128,8 +128,11 @@ def run_agent(user_message: str, client: OpenAI | None = None) -> str:
     ]
 
     # The DeepSeek API supports tool calling with the same interface as OpenAI.
-    # We allow up to 5 turns to prevent infinite loops.
-    max_turns = 5
+    # Bound both model turns and aggregate tool calls so one public request
+    # cannot fan out into an open-ended number of paid or upstream requests.
+    max_turns = 4
+    max_tool_calls = 8
+    tool_calls_used = 0
     for _ in range(max_turns):
         response = client.chat.completions.create(
             model=DEEPSEEK_MODEL,
@@ -166,6 +169,9 @@ def run_agent(user_message: str, client: OpenAI | None = None) -> str:
 
             # Execute each tool call and append results
             for tc in message.tool_calls:
+                tool_calls_used += 1
+                if tool_calls_used > max_tool_calls:
+                    return "I reached the data-request limit for one message. Please ask a narrower question."
                 tool_name = tc.function.name
                 try:
                     arguments = json.loads(tc.function.arguments)
@@ -174,6 +180,8 @@ def run_agent(user_message: str, client: OpenAI | None = None) -> str:
                 else:
                     try:
                         tool_result = execute_tool(tool_name, arguments)
+                        if len(tool_result) > 20_000:
+                            tool_result = tool_result[:20_000] + "\n[tool output truncated]"
                     except Exception as exc:
                         tool_result = json.dumps({"error": str(exc)})
 

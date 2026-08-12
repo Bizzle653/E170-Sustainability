@@ -1094,8 +1094,13 @@
       "fortune_rank": 13,
       "rank": 113,
       "classification": {
+        "status": "agent_verified",
         "agent": "Green Canopy Sustainability Intelligence Agent",
         "model": "deepseek-chat",
+        "policy_version": "legacy-v1",
+        "prompt_version": "classification-v1",
+        "verified_at": "2026-08-12T04:47:10.665388+00:00",
+        "last_changed_at": null,
         "last_checked_at": "2026-08-12T04:47:10.665388+00:00",
         "confidence": 0.9,
         "evidence_source_count": 3

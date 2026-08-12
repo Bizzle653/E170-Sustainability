@@ -65,6 +65,7 @@ class SustainabilityPayload(BaseModel):
     status: Literal["available", "unavailable"]
     raw_fields: dict[str, Any] = Field(default_factory=dict)
     retrieved_at: str
+    published_at: str | None = None
     rating_date: str | None = None
     source: str = "Yahoo Finance via yfinance"
 
@@ -160,6 +161,8 @@ class AlignmentDetail(BaseModel):
     priority_breakdown: list[PriorityMatch]
     esg_snapshot: list[EsgField]
     business_summary_available: bool = False
+    classification_status: Literal["agent_verified", "unreviewed", "stale"] = "unreviewed"
+    classification_verified_at: str | None = None
 
 
 class HoldingAssessment(BaseModel):
@@ -284,6 +287,8 @@ class ClassificationEvidenceResponse(BaseModel):
     retrieved_at: str
     url: str | None = None
     excerpt: str
+    content_sha256: str | None = None
+    quotes: list[str] = Field(default_factory=list)
 
 
 class ClassificationUpdateResponse(BaseModel):
@@ -294,6 +299,9 @@ class ClassificationUpdateResponse(BaseModel):
     published_at: str
     agent: str
     model: str
+    policy_version: str | None = None
+    prompt_version: str | None = None
+    verification: str | None = None
     old_tags: list[str]
     new_tags: list[str]
     added_tags: list[str]
@@ -307,12 +315,31 @@ class ClassificationUpdateResponse(BaseModel):
     accepted_assessments: list[dict[str, Any]] = Field(default_factory=list)
     evidence: list[ClassificationEvidenceResponse] = Field(default_factory=list)
     greenwashing_flags: list[str] = Field(default_factory=list)
+    evidence_limitations: list[str] = Field(default_factory=list)
     portfolio_impact: str
 
 
 class ClassificationUpdatesResponse(BaseModel):
     schema_version: int
+    total: int = 0
+    offset: int = 0
+    next_offset: int | None = None
     updates: list[ClassificationUpdateResponse]
+
+
+class AgentStatusResponse(BaseModel):
+    schema_version: int
+    agent: str
+    policy_version: str
+    prompt_version: str
+    total_securities: int
+    verified_securities: int
+    coverage_percent: float
+    checked_securities: int
+    pending_securities: int
+    retry_queue: list[dict[str, Any]] = Field(default_factory=list)
+    retry_count: int
+    last_run: dict[str, Any] | None = None
 
 
 class SecurityClassificationResponse(BaseModel):

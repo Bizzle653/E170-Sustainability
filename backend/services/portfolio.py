@@ -117,7 +117,9 @@ def _philosophy_adjustment(item: dict[str, Any], philosophy: str) -> float:
 
 def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     priority = profile.sustainability_priority_weights
-    match = sum(priority.get(tag, 0) for tag in item.get("tags", []))
+    classification = item.get("classification") or {}
+    provenance_weight = 1.0 if classification.get("status") == "agent_verified" else 0.45
+    match = sum(priority.get(tag, 0) for tag in item.get("tags", [])) * provenance_weight
     diversified = 0.12 if item["type"] == "etf" else 0
     # A small nudge among otherwise-equal candidates. ETF and stock "rank" come from
     # different scales (ETF: 1-100 by assets, stock: 1-1055 combined universe rank), so
@@ -183,7 +185,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
             business_summary, fund_evidence = compose_fund_snapshot(holdings, universe_by_ticker, active_priorities)
         alignment = alignment_score(
             profile, item.get("tags", []), sustainability, item["type"],
-            info.get("longBusinessSummary"), fund_evidence,
+            info.get("longBusinessSummary"), fund_evidence, item.get("classification"),
         )
         # A simple historical risk-adjusted return (return per unit of volatility) --
         # the same idea as a Sharpe ratio, used only to rank candidates against each
@@ -291,6 +293,15 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         round(weighted_alignment, 1),
         diversification_score,
     )
+    unverified_count = sum(
+        allocation.detail.classification_status != "agent_verified"
+        for allocation in allocations
+    )
+    if unverified_count:
+        warnings.append(
+            f"{unverified_count} holding(s) use legacy or stale Green Canopy labels. "
+            "Their sustainability score contribution is reduced until the autonomous Agent verifies current evidence."
+        )
 
     return PortfolioResponse(
         investor_profile=profile,

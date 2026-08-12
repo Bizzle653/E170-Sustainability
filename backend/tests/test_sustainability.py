@@ -7,10 +7,8 @@ def test_missing_esg_reduces_confidence_without_inventing_raw_values():
     profile = build_profile(QuestionnaireAnswers(priorities=["climate"]))
     result = alignment_score(profile, ["climate"], {}, "etf")
     assert result["confidence"] in {"low", "medium"}
-    # ESG data is unavailable industry-wide now, so a per-holding "unavailable" notice
-    # is no longer useful signal; it's surfaced once in the portfolio-level warnings
-    # instead of repeated on every holding.
-    assert result["limitations"] == []
+    assert result["limitations"]
+    assert result["detail"]["classification_status"] == "unreviewed"
     assert "did not provide sustainability risk data" not in result["detail"]["explanation"]
 
 

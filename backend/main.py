@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.models import (
     CompanyAnalysisRequest,
     CompanyAnalysisResponse,
     CompanyResponse,
+    AgentStatusResponse,
     ClassificationUpdatesResponse,
     InvestorProfile,
     PortfolioAnalysisRequest,
@@ -27,9 +29,11 @@ from backend.agent import run_agent
 from pydantic import BaseModel, Field
 from backend.services.investor_profile import build_profile
 from backend.services.classification_intelligence import (
+    load_agent_status,
     load_classification_updates,
     load_security_classification,
 )
+from backend.rate_limit import RATE_LIMITER, rule_for_path
 from backend.services.market_data import MarketDataError, MarketDataService
 from backend.services.portfolio import generate_portfolio, load_universe
 from backend.services.portfolio_review import analyze_portfolio
@@ -53,7 +57,8 @@ app = FastAPI(
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://e170-sustaniability-dogi.vercel.app",
+    "https://e170-sustainability-navy.vercel.app",
+    "https://e170-sustainability-high-ground1.vercel.app",
 ]
 configured_origins = [
     origin.strip()
@@ -69,6 +74,21 @@ app.add_middleware(
 market_data = MarketDataService()
 
 DEFAULT_WATCHLIST = ["VOO", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NEE", "ICLN"]
+
+
+@app.middleware("http")
+async def protect_costly_public_endpoints(request: Request, call_next):
+    matched_rule = rule_for_path(request.url.path)
+    if matched_rule:
+        bucket, rule = matched_rule
+        retry_after = RATE_LIMITER.check(bucket, RATE_LIMITER.client_key(request), rule)
+        if retry_after is not None:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Request limit reached. Please try again later."},
+                headers={"Retry-After": str(retry_after)},
+            )
+    return await call_next(request)
 
 
 @app.get("/api/health")
@@ -119,9 +139,15 @@ def search_universe(q: str = "", limit: int = 10) -> dict[str, object]:
 
 
 @app.get("/api/classifications/updates", response_model=ClassificationUpdatesResponse)
-def classification_updates(limit: int = 50, ticker: str | None = None) -> dict[str, object]:
+def classification_updates(limit: int = 50, offset: int = 0, ticker: str | None = None) -> dict[str, object]:
     """Published, versioned changes made by the autonomous classification agent."""
-    return load_classification_updates(limit=limit, ticker=ticker)
+    return load_classification_updates(limit=limit, offset=offset, ticker=ticker)
+
+
+@app.get("/api/agent/status", response_model=AgentStatusResponse)
+def agent_status() -> dict[str, object]:
+    """Coverage, last-run health, and bounded retry information for the autonomous agent."""
+    return load_agent_status()
 
 
 @app.get("/api/classifications/{ticker}", response_model=SecurityClassificationResponse)
@@ -155,7 +181,10 @@ def analyze_company(request: CompanyAnalysisRequest) -> CompanyAnalysisResponse:
         sustainability = market_data.get_sustainability(symbol)
     except MarketDataError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    assessment = alignment_score(request.profile, item.get("tags", []), sustainability, "stock", info.get("longBusinessSummary"))
+    assessment = alignment_score(
+        request.profile, item.get("tags", []), sustainability, "stock",
+        info.get("longBusinessSummary"), classification=item.get("classification"),
+    )
     return CompanyAnalysisResponse(
         **company_data.model_dump(),
         market_cap=info.get("marketCap"),

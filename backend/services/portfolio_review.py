@@ -65,7 +65,10 @@ def _evaluate_holdings(
             active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
             fund_holdings = market.get_top_holdings(symbol)
             business_summary, fund_evidence = compose_fund_snapshot(fund_holdings, universe_by_ticker, active_priorities)
-        assessment = alignment_score(profile, tags, sustainability, asset_type, info.get("longBusinessSummary"), fund_evidence)
+        assessment = alignment_score(
+            profile, tags, sustainability, asset_type, info.get("longBusinessSummary"), fund_evidence,
+            universe_item.get("classification") if universe_item else None,
+        )
         evaluated.append({
             "ticker": symbol,
             "name": name,
@@ -120,7 +123,10 @@ def _build_suggestions(
             active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
             fund_holdings = market.get_top_holdings(symbol)
             business_summary, fund_evidence = compose_fund_snapshot(fund_holdings, universe_by_ticker, active_priorities)
-        assessment = alignment_score(profile, candidate.get("tags", []), sustainability, candidate["type"], info.get("longBusinessSummary"), fund_evidence)
+        assessment = alignment_score(
+            profile, candidate.get("tags", []), sustainability, candidate["type"],
+            info.get("longBusinessSummary"), fund_evidence, candidate.get("classification"),
+        )
         matched = assessment["matched_priorities"]
         if not matched:
             continue

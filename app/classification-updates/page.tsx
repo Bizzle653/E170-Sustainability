@@ -10,6 +10,7 @@ type Evidence = {
   title: string;
   source: string;
   retrieved_at: string;
+  published_at?: string | null;
   url?: string | null;
   excerpt: string;
 };
@@ -21,6 +22,9 @@ type ClassificationUpdate = {
   asset_type: string;
   published_at: string;
   model: string;
+  policy_version?: string | null;
+  prompt_version?: string | null;
+  verification?: string | null;
   added_tags: string[];
   removed_tags: string[];
   added_exclusions: string[];
@@ -29,6 +33,7 @@ type ClassificationUpdate = {
   confidence: number;
   evidence: Evidence[];
   greenwashing_flags: string[];
+  evidence_limitations?: string[];
   portfolio_impact: string;
 };
 
@@ -36,6 +41,8 @@ const label = (value: string) => value.replaceAll("_", " ");
 
 export default function ClassificationUpdatesPage() {
   const [updates, setUpdates] = useState<ClassificationUpdate[]>([]);
+  const [total, setTotal] = useState(0);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [portfolioTickers, setPortfolioTickers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -59,7 +66,11 @@ export default function ClassificationUpdatesPage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
       })
-      .then((payload) => setUpdates(payload.updates ?? []))
+      .then((payload) => {
+        setUpdates(payload.updates ?? []);
+        setTotal(payload.total ?? 0);
+        setNextOffset(payload.next_offset ?? null);
+      })
       .catch((requestError: unknown) => {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;
         setError(requestError instanceof Error ? requestError.message : "Updates could not be loaded");
@@ -70,6 +81,24 @@ export default function ClassificationUpdatesPage() {
       window.clearTimeout(portfolioTimer);
     };
   }, []);
+
+  async function loadMore() {
+    if (nextOffset === null || loading) return;
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(apiUrl(`/api/classifications/updates?limit=100&offset=${nextOffset}`));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      setUpdates((current) => [...current, ...(payload.updates ?? [])]);
+      setTotal(payload.total ?? total);
+      setNextOffset(payload.next_offset ?? null);
+    } catch (requestError: unknown) {
+      setError(requestError instanceof Error ? requestError.message : "Updates could not be loaded");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="classificationPage">
@@ -136,17 +165,34 @@ export default function ClassificationUpdatesPage() {
                 {update.evidence.map((source) => (
                   <div key={`${update.id}-${source.id}`}>
                     <strong>{source.title}</strong>
-                    <small>{source.source} · retrieved {new Date(source.retrieved_at).toLocaleDateString()}</small>
+                    <small>
+                      {source.source}
+                      {source.published_at ? ` · published ${new Date(source.published_at).toLocaleDateString()}` : ""}
+                      {` · retrieved ${new Date(source.retrieved_at).toLocaleDateString()}`}
+                    </small>
                     <p>{source.excerpt}</p>
                     {source.url && <a className="textLink" href={source.url} target="_blank" rel="noreferrer">Open source</a>}
                   </div>
                 ))}
+                {(update.evidence_limitations ?? []).map((limitation) => (
+                  <p className="classificationImpact" key={limitation}>{limitation}</p>
+                ))}
                 <p className="classificationImpact">{update.portfolio_impact}</p>
-                <small>Model: {update.model}</small>
+                <small>
+                  Model: {update.model}
+                  {update.policy_version ? ` · policy ${update.policy_version}` : ""}
+                  {update.prompt_version ? ` · prompt ${update.prompt_version}` : ""}
+                  {update.verification ? ` · ${label(update.verification)}` : ""}
+                </small>
               </div>
             </details>
           </article>
         ))}
+        {nextOffset !== null && (
+          <button className="button" type="button" onClick={loadMore} disabled={loading}>
+            {loading ? "Loading…" : `Load older announcements (${updates.length} of ${total})`}
+          </button>
+        )}
       </section>
     </main>
   );

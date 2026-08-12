@@ -5,6 +5,8 @@ export type AlignmentDetail = {
   priority_breakdown: PriorityMatch[];
   esg_snapshot: EsgField[];
   business_summary_available: boolean;
+  classification_status: "agent_verified" | "unreviewed" | "stale";
+  classification_verified_at?: string | null;
 };
 
 function evidenceLine(item: PriorityMatch): string {
@@ -37,6 +39,13 @@ function Panel({detail, name, website}: {detail: AlignmentDetail; name: string; 
   return (
     <div className="whyDetail">
       <p>{detail.explanation}</p>
+      {detail.classification_status !== "agent_verified" && (
+        <p className="classificationImpact">
+          {detail.classification_status === "stale"
+            ? "The Agent's evidence review is stale, so this label has reduced score weight and low confidence."
+            : "This legacy label has not yet passed the Agent's evidence review, so it has reduced score weight and low confidence."}
+        </p>
+      )}
       {detail.priority_breakdown.length > 0 && (
         <div className="priorityChecklist">
           {detail.priority_breakdown.map((item) => (

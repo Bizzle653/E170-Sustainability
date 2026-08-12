@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 import backend.main as main_module
 import api.index as vercel_entry
+from backend.rate_limit import RATE_LIMITER
 from backend.models import CompanyResponse, SustainabilityPayload
 
 
@@ -92,13 +93,13 @@ def test_production_origin_cors_preflight():
     response = client.options(
         "/api/portfolio/generate",
         headers={
-            "Origin": "https://e170-sustaniability-dogi.vercel.app",
+            "Origin": "https://e170-sustainability-navy.vercel.app",
             "Access-Control-Request-Method": "POST",
             "Access-Control-Request-Headers": "content-type",
         },
     )
     assert response.status_code == 200
-    assert response.headers["access-control-allow-origin"] == "https://e170-sustaniability-dogi.vercel.app"
+    assert response.headers["access-control-allow-origin"] == "https://e170-sustainability-navy.vercel.app"
 
 
 def test_portfolio_api_totals_exclusions_and_schema(monkeypatch):
@@ -199,7 +200,13 @@ def test_classification_announcement_and_security_endpoints(monkeypatch):
     monkeypatch.setattr(
         main_module,
         "load_classification_updates",
-        lambda limit=50, ticker=None: {"schema_version": 1, "updates": [update]},
+        lambda limit=50, offset=0, ticker=None: {
+            "schema_version": 1,
+            "total": 1,
+            "offset": offset,
+            "next_offset": None,
+            "updates": [update],
+        },
     )
     monkeypatch.setattr(
         main_module,
@@ -224,3 +231,26 @@ def test_classification_announcement_and_security_endpoints(monkeypatch):
     classification = client.get("/api/classifications/msft")
     assert classification.status_code == 200
     assert classification.json()["ticker"] == "MSFT"
+
+
+def test_agent_status_endpoint():
+    client = TestClient(main_module.app)
+    response = client.get("/api/agent/status")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total_securities"] == 1055
+    assert payload["verified_securities"] >= 1
+    assert payload["policy_version"]
+
+
+def test_chat_endpoint_has_cost_rate_limit(monkeypatch):
+    RATE_LIMITER.clear()
+    monkeypatch.setattr(main_module, "run_agent", lambda message: f"Reply to {message}")
+    client = TestClient(main_module.app)
+    headers = {"x-forwarded-for": "203.0.113.10"}
+    for _ in range(12):
+        assert client.post("/api/chat", json={"message": "hello"}, headers=headers).status_code == 200
+    limited = client.post("/api/chat", json={"message": "hello"}, headers=headers)
+    assert limited.status_code == 429
+    assert int(limited.headers["retry-after"]) > 0
+    RATE_LIMITER.clear()

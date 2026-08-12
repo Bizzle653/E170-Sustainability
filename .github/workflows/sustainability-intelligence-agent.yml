@@ -10,7 +10,7 @@ on:
       limit:
         description: "Maximum securities to research (1-25)"
         required: true
-        default: "10"
+        default: "20"
         type: string
       stale_days:
         description: "Revisit classifications after this many days"
@@ -47,6 +47,7 @@ jobs:
         run: python -m pip install -r backend/requirements.txt
 
       - name: Research and apply classifications
+        id: research
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           INPUT_TICKERS: ${{ inputs.tickers }}
@@ -55,20 +56,21 @@ jobs:
         shell: bash
         run: |
           test -n "$DEEPSEEK_API_KEY" || { echo "DEEPSEEK_API_KEY repository secret is required"; exit 1; }
-          limit="${INPUT_LIMIT:-10}"
+          limit="${INPUT_LIMIT:-20}"
           stale_days="${INPUT_STALE_DAYS:-90}"
           args=(--apply --limit "$limit" --stale-days "$stale_days")
           if [ -n "$INPUT_TICKERS" ]; then
             args+=(--tickers "$INPUT_TICKERS")
           fi
-          python -m backend.classification_agent "${args[@]}"
+          python -m backend.classification_agent "${args[@]}" | tee "$RUNNER_TEMP/classification-result.json"
+          python scripts/summarize_agent_run.py "$RUNNER_TEMP/classification-result.json"
 
       - name: Publish classification metadata and announcements
         shell: bash
         run: |
           git config user.name "green-canopy-agent[bot]"
           git config user.email "green-canopy-agent[bot]@users.noreply.github.com"
-          git add backend/data/investment_universe.json backend/data/classification_updates.json
+          git add backend/data/investment_universe.json backend/data/classification_updates.json backend/data/classification_agent_state.json
           if git diff --cached --quiet; then
             echo "No classification metadata changed."
             exit 0
@@ -76,3 +78,9 @@ jobs:
           git commit -m "Update autonomous sustainability classifications"
           git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Report a fully failed research batch
+        if: steps.research.outputs.run_status == 'failed'
+        run: |
+          echo "Every selected security failed. Retry state was saved, but the workflow needs attention."
+          exit 1

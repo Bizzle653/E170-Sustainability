@@ -14,6 +14,7 @@ export function SiteNav() {
         <Link className="backButton navButton" href="/learn">Learn</Link>
         <Link className="backButton navButton" href="/methodology">Methodology</Link>
         <Link className="backButton navButton" href="/classification-updates">AI label updates</Link>
+        <Link className="backButton navButton" href="/agent-status">Agent status</Link>
         <Link className="backButton navButton" href="/chat">AI Assistant</Link>
         <Link className="button buttonSmall" href="/">Build portfolio</Link>
       </div>
