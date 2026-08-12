@@ -47,7 +47,26 @@ class FakeMarket:
                 retrieved_at="2026-01-01T00:00:00+00:00",
             ),
             sources=["Yahoo Finance via yfinance"],
+            description=self.get_info(symbol)["longBusinessSummary"],
         )
+
+    def sparkline(self, symbol, period="1mo", interval="1d"):
+        close = self.get_history(symbol)
+        points = [{"date": ts.isoformat(), "close": float(value)} for ts, value in close.tail(20).items()]
+        first_price, last_price = points[0]["close"], points[-1]["close"]
+        return {
+            "ticker": symbol,
+            "company_name": f"{symbol} Test Fund",
+            "sector": "Diversified",
+            "current_price": last_price,
+            "change_amount": last_price - first_price,
+            "change_percent": (last_price - first_price) / first_price if first_price else 0.0,
+            "period": period,
+            "interval": interval,
+            "points": points,
+            "blurb": f"{symbol} Test Fund's closing price over the period shown.",
+            "retrieved_at": self._timestamp(),
+        }
 
     def _timestamp(self):
         return "2026-01-01T00:00:00+00:00"
@@ -130,3 +149,24 @@ def test_search_quotes_and_company_review(monkeypatch):
     assert review.status_code == 200, review.text
     assert review.json()["green_canopy_score"] >= 0
     assert review.json()["description"]
+
+
+def test_market_sparkline_and_watchlist(monkeypatch):
+    monkeypatch.setattr(main_module, "market_data", FakeMarket())
+    client = TestClient(main_module.app)
+
+    sparkline = client.get("/api/market/sparkline/AAPL")
+    assert sparkline.status_code == 200, sparkline.text
+    body = sparkline.json()
+    assert body["ticker"] == "AAPL"
+    assert len(body["points"]) > 0
+    assert body["blurb"]
+
+    watchlist = client.get("/api/market/watchlist?tickers=AAPL,MSFT")
+    assert watchlist.status_code == 200, watchlist.text
+    tickers = [item["ticker"] for item in watchlist.json()["items"]]
+    assert tickers == ["AAPL", "MSFT"]
+
+    default_watchlist = client.get("/api/market/watchlist")
+    assert default_watchlist.status_code == 200
+    assert len(default_watchlist.json()["items"]) == len(main_module.DEFAULT_WATCHLIST)

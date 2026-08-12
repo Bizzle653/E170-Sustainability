@@ -18,6 +18,8 @@ from backend.models import (
     QuoteItem,
     QuoteRequest,
     QuoteResponse,
+    SparklineResponse,
+    WatchlistResponse,
 )
 from backend.agent import run_agent
 from pydantic import BaseModel, Field
@@ -59,6 +61,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 market_data = MarketDataService()
+
+DEFAULT_WATCHLIST = ["VOO", "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NEE", "ICLN"]
 
 
 @app.get("/api/health")
@@ -134,13 +138,32 @@ def analyze_company(request: CompanyAnalysisRequest) -> CompanyAnalysisResponse:
     assessment = alignment_score(request.profile, item.get("tags", []), sustainability, "stock", info.get("longBusinessSummary"))
     return CompanyAnalysisResponse(
         **company_data.model_dump(),
-        description=info.get("longBusinessSummary"),
         market_cap=info.get("marketCap"),
         green_canopy_score=assessment["alignment_score"],
         green_canopy_confidence=assessment["confidence"],
         matched_priorities=assessment["matched_priorities"],
         assessment_limitations=assessment["limitations"],
     )
+
+
+@app.get("/api/market/sparkline/{ticker}", response_model=SparklineResponse)
+def market_sparkline(ticker: str, period: str = "1mo", interval: str = "1d") -> SparklineResponse:
+    try:
+        return SparklineResponse(**market_data.sparkline(ticker, period=period, interval=interval))
+    except MarketDataError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/market/watchlist", response_model=WatchlistResponse)
+def market_watchlist(tickers: str = "", period: str = "1mo", interval: str = "1d") -> WatchlistResponse:
+    symbols = [symbol.strip().upper() for symbol in tickers.split(",") if symbol.strip()][:12] or DEFAULT_WATCHLIST
+    items: list[SparklineResponse] = []
+    for symbol in symbols:
+        try:
+            items.append(SparklineResponse(**market_data.sparkline(symbol, period=period, interval=interval)))
+        except MarketDataError:
+            continue
+    return WatchlistResponse(period=period, interval=interval, retrieved_at=market_data._timestamp(), items=items)
 
 
 @app.post("/api/portfolio/quotes", response_model=QuoteResponse)

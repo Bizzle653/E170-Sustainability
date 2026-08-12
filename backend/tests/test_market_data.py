@@ -54,3 +54,27 @@ def test_history_frame_rejects_unsupported_ranges_before_fetching():
         service.get_history_frame("TEST", period="forever", interval="1d")
     with pytest.raises(MarketDataError, match="interval"):
         service.get_history_frame("TEST", period="1mo", interval="4h")
+
+
+def test_sparkline_returns_points_change_and_blurb():
+    service = MarketDataService(lambda symbol: FakeTicker(symbol))
+    result = service.sparkline("TEST", period="1mo", interval="1d")
+    assert result["ticker"] == "TEST"
+    assert len(result["points"]) <= 150
+    assert result["points"][0]["close"] < result["points"][-1]["close"]
+    assert result["change_amount"] > 0
+    assert result["change_percent"] > 0
+    assert result["blurb"]
+
+
+def test_sparkline_downsamples_long_histories():
+    service = MarketDataService(lambda symbol: FakeTicker(symbol))
+    result = service.sparkline("TEST", period="2y", interval="1d")
+    assert len(result["points"]) <= 150
+    assert result["points"][-1]["close"] > 0
+
+
+def test_sparkline_raises_on_empty_history():
+    service = MarketDataService(lambda symbol: FakeTicker(symbol, empty=True))
+    with pytest.raises(MarketDataError):
+        service.sparkline("TEST")

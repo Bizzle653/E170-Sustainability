@@ -147,6 +147,42 @@ class MarketDataService:
         cache_key = f"history-frame:{symbol}:{period}:{interval}"
         return self.cache.get_or_set(cache_key, ttl, load)
 
+    def sparkline(self, symbol: str, period: str = "1mo", interval: str = "1d") -> dict[str, Any]:
+        """Build a chart-ready price series plus a plain-English blurb for one ticker."""
+        symbol = symbol.upper().strip()
+        frame = self.get_history_frame(symbol, period=period, interval=interval)
+        close = pd.to_numeric(frame["Close"], errors="coerce").dropna()
+        if close.empty:
+            raise MarketDataError(f"No price history for {symbol}")
+        info = self.get_info(symbol)
+
+        points = [{"date": timestamp.isoformat(), "close": float(value)} for timestamp, value in close.items()]
+        if len(points) > 150:
+            step = math.ceil(len(points) / 150)
+            sampled = points[::step]
+            if sampled[-1] is not points[-1]:
+                sampled.append(points[-1])
+            points = sampled
+
+        first_price = float(close.iloc[0])
+        last_price = float(close.iloc[-1])
+        name = info.get("longName") or info.get("shortName") or symbol
+        blurb = first_sentence(info.get("longBusinessSummary")) or f"{name}'s closing price over the period shown."
+
+        return {
+            "ticker": symbol,
+            "company_name": name,
+            "sector": info.get("sector"),
+            "current_price": last_price,
+            "change_amount": last_price - first_price,
+            "change_percent": (last_price - first_price) / first_price if first_price else 0.0,
+            "period": period,
+            "interval": interval,
+            "points": points,
+            "blurb": blurb,
+            "retrieved_at": self._timestamp(),
+        }
+
     def get_sustainability(self, symbol: str) -> dict[str, Any]:
         symbol = symbol.upper().strip()
 
@@ -237,6 +273,7 @@ class MarketDataService:
                 rating_date=str(rating_date) if rating_date is not None else None,
             ),
             sources=["Yahoo Finance via yfinance"],
+            description=info.get("longBusinessSummary"),
         )
 
 

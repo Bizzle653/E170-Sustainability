@@ -81,6 +81,33 @@ class CompanyResponse(BaseModel):
     maximum_drawdown: float
     yahoo_sustainability: SustainabilityPayload
     sources: list[str]
+    description: str | None = None
+
+
+class PricePoint(BaseModel):
+    date: str
+    close: float
+
+
+class SparklineResponse(BaseModel):
+    ticker: str
+    company_name: str
+    sector: str | None = None
+    current_price: float
+    change_amount: float
+    change_percent: float
+    period: str
+    interval: str
+    points: list[PricePoint]
+    blurb: str | None = None
+    retrieved_at: str
+
+
+class WatchlistResponse(BaseModel):
+    period: str
+    interval: str
+    retrieved_at: str
+    items: list[SparklineResponse]
 
 
 class CompanyAnalysisRequest(BaseModel):

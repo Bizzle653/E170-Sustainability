@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { HeroTicker } from "@/components/MarketPulse";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 type Answers = {
@@ -151,11 +152,12 @@ export default function Home() {
           <p>Build an educational portfolio simulation around the causes you care about—without losing sight of diversification, historical risk, and your financial goals.</p>
           <div className="heroActions"><button className="button" onClick={() => setBuilderOpen(true)}>Get started <span>→</span></button><a className="textLink" href="#how">See how it works</a></div>
           <div className="trustLine"><span>✓ No brokerage connection</span><span>✓ Transparent scoring</span><span>✓ Educational simulation</span></div>
+          <HeroTicker />
         </div>
       </section>
 
       <section className="section" id="how">
-        <div className="sectionIntro centered"><span className="eyebrow">A clearer path</span><h2>From your values to a portfolio you understand.</h2><p>Green Canopy combines a deterministic investor profile, current provider data, and constrained optimization. Every result explains what is known—and what is missing.</p></div>
+        <div className="sectionIntro centered"><span className="eyebrow">A clearer path</span><h2>From your values to a portfolio you understand.</h2><p>We turn your answers into a real portfolio, calculated from live market data. Every result explains exactly what it knows, and what it doesn&apos;t.</p></div>
         <div className="steps">
           {[
             ["01", "Tell us what matters", "Prioritize climate, people, nature, water, circularity, and governance."],
