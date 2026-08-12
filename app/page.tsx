@@ -22,6 +22,17 @@ type Answers = {
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
   (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "");
+const MIN_AMOUNT = 1;
+const MAX_AMOUNT = 10_000_000;
+const AMOUNT_SLIDER_STEPS = 1000;
+// The $1-$10M range spans 7 orders of magnitude, so a linear slider would waste almost
+// its entire track on amounts nobody picks. Map slider position to amount logarithmically
+// so common amounts (hundreds to tens of thousands) still get usable drag precision.
+const clampAmount = (value: number) => Math.min(MAX_AMOUNT, Math.max(MIN_AMOUNT, value));
+const amountToSliderPosition = (amount: number) =>
+  Math.round((AMOUNT_SLIDER_STEPS * Math.log(clampAmount(amount) / MIN_AMOUNT)) / Math.log(MAX_AMOUNT / MIN_AMOUNT));
+const sliderPositionToAmount = (position: number) =>
+  clampAmount(Math.round(MIN_AMOUNT * Math.pow(MAX_AMOUNT / MIN_AMOUNT, position / AMOUNT_SLIDER_STEPS)));
 const priorities = [
   ["climate", "Climate", "Lower carbon emissions"],
   ["renewable_energy", "Clean energy", "Renewables and storage"],
@@ -201,9 +212,9 @@ export default function Home() {
               {step === 3 && <OptionList value={answers.goal} options={[["long_term_growth","Long-term growth"],["growth_and_stability","Growth and stability"],["income_and_preservation","Income and preservation"]]} onChange={(goal) => setAnswers({...answers, goal})} />}
               {step === 4 && <OptionList value={answers.horizon} options={[["under_3_years","Under 3 years"],["3_to_10_years","3–10 years"],["10_plus_years","10+ years"]]} onChange={(horizon) => setAnswers({...answers, horizon})} />}
               {step === 5 && <><OptionList value={answers.risk} options={[["move_to_safety","Reduce risk after a decline"],["stay_invested","Stay invested"],["invest_more","Invest more at lower prices"]]} onChange={(risk) => setAnswers({...answers, risk, decline_reaction: risk === "move_to_safety" ? "sell" : risk === "invest_more" ? "buy_more" : "hold"})} /><label className="selectLabel">Sustainability trade-off<select value={answers.tradeoff} onChange={(event) => setAnswers({...answers, tradeoff: event.target.value})}><option value="none">No expected-return trade-off</option><option value="small">Small trade-off</option><option value="moderate">Moderate trade-off</option><option value="strong">Strong trade-off</option></select></label></>}
-              {step === 6 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min="500" max="1000000" step="500" value={answers.amount} onChange={(event) => setAnswers({...answers, amount: Number(event.target.value)})} /></div><input className="range" type="range" min="500" max="100000" step="500" value={Math.min(100000, answers.amount)} onChange={(event) => setAnswers({...answers, amount: Number(event.target.value)})} /><small>$500 minimum <span>$1,000,000 maximum</span></small></div>}
+              {step === 6 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min={MIN_AMOUNT} max={MAX_AMOUNT} step="1" value={answers.amount} onChange={(event) => setAnswers({...answers, amount: clampAmount(Number(event.target.value) || MIN_AMOUNT)})} /></div><input className="range" type="range" min="0" max={AMOUNT_SLIDER_STEPS} step="1" value={amountToSliderPosition(answers.amount)} onChange={(event) => setAnswers({...answers, amount: sliderPositionToAmount(Number(event.target.value))})} /><small>${MIN_AMOUNT.toLocaleString()} minimum <span>${MAX_AMOUNT.toLocaleString()} maximum</span></small></div>}
               {error && <p className="errorMessage" role="alert">{error}</p>}
-              <div className="builderActions"><button className="backButton" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>Back</button><button className="button" disabled={(step === 0 && answers.priorities.length === 0) || answers.amount < 500} onClick={() => step === steps.length - 1 ? generate() : setStep((value) => value + 1)}>{step === steps.length - 1 ? "Create my portfolio" : "Continue"} <span>→</span></button></div>
+              <div className="builderActions"><button className="backButton" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>Back</button><button className="button" disabled={(step === 0 && answers.priorities.length === 0) || answers.amount < MIN_AMOUNT} onClick={() => step === steps.length - 1 ? generate() : setStep((value) => value + 1)}>{step === steps.length - 1 ? "Create my portfolio" : "Continue"} <span>→</span></button></div>
             </>}
           </section>
         </div>

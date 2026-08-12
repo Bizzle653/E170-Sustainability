@@ -49,7 +49,7 @@ class ProfileRequest(BaseModel):
 
 
 class PortfolioRequest(BaseModel):
-    investment_amount: float = Field(ge=500, le=1_000_000)
+    investment_amount: float = Field(ge=1, le=10_000_000)
     answers: QuestionnaireAnswers | None = None
     profile: InvestorProfile | None = None
     number_of_holdings: int = Field(default=8, ge=5, le=15)
