@@ -877,9 +877,36 @@ class SustainabilityIntelligenceAgent:
                 exclusion_categories = {item.category for item in decision.exclusion_assessments}
                 missing = set(SUPPORTED_TAGS).difference(tag_categories)
                 missing_exclusions = set(SUPPORTED_EXCLUSIONS).difference(exclusion_categories)
+                required_categories = set(old_tags).intersection(SUPPORTED_TAGS)
+                required_exclusions = set(old_exclusions).intersection(SUPPORTED_EXCLUSIONS)
+                missing_required = required_categories.difference(tag_categories)
+                missing_required.update(required_exclusions.difference(exclusion_categories))
+                if missing_required:
+                    raise ValueError(
+                        "Incomplete classification response for current metadata: "
+                        f"{', '.join(sorted(missing_required))}"
+                    )
                 if missing or missing_exclusions:
-                    categories = sorted(missing.union(missing_exclusions))
-                    raise ValueError(f"Incomplete classification response; missing: {', '.join(categories)}")
+                    decision = decision.model_copy(update={
+                        "tag_assessments": decision.tag_assessments + [
+                            ClassificationAssessment(
+                                category=category,
+                                action="insufficient",
+                                confidence=0.0,
+                                rationale="The model omitted this absent category; no production change is permitted.",
+                            )
+                            for category in sorted(missing)
+                        ],
+                        "exclusion_assessments": decision.exclusion_assessments + [
+                            ClassificationAssessment(
+                                category=category,
+                                action="insufficient",
+                                confidence=0.0,
+                                rationale="The model omitted this absent exclusion; no production change is permitted.",
+                            )
+                            for category in sorted(missing_exclusions)
+                        ],
+                    })
             except (MarketDataError, httpx.HTTPError, OSError, RuntimeError, ValueError) as exc:
                 results.append({"ticker": security.get("ticker"), "status": "failed", "error": str(exc)})
                 if apply:

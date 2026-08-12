@@ -286,3 +286,55 @@ def test_change_is_rejected_when_model_quote_is_not_in_evidence(tmp_path):
 
     assert result["changed"] == 0
     assert load_classification_updates(updates_path=updates_path)["total"] == 0
+
+
+def test_omitted_absent_categories_are_normalized_to_insufficient(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    updates_path = tmp_path / "updates.json"
+    _write_universe(universe_path)
+    provider = FakeProvider()
+    original_classify = provider.classify
+
+    def classify_with_absent_categories_omitted(security, evidence):
+        decision = original_classify(security, evidence)
+        decision.tag_assessments = [
+            item for item in decision.tag_assessments
+            if item.category in {"climate", "renewable_energy", "governance"}
+        ]
+        return decision
+
+    provider.classify = classify_with_absent_categories_omitted
+    agent = SustainabilityIntelligenceAgent(
+        market_data=FakeMarket(), decision_provider=provider, researcher=FakeResearcher(),
+        universe_path=universe_path, updates_path=updates_path,
+    )
+
+    result = agent.run(tickers=["TEST"], apply=True)
+
+    assert result["run_status"] == "succeeded"
+    assert result["changed"] == 1
+
+
+def test_omitted_current_category_fails_safely(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    updates_path = tmp_path / "updates.json"
+    _write_universe(universe_path)
+    provider = FakeProvider()
+    original_classify = provider.classify
+
+    def classify_without_current_category(security, evidence):
+        decision = original_classify(security, evidence)
+        decision.tag_assessments = [item for item in decision.tag_assessments if item.category != "climate"]
+        return decision
+
+    provider.classify = classify_without_current_category
+    agent = SustainabilityIntelligenceAgent(
+        market_data=FakeMarket(), decision_provider=provider, researcher=FakeResearcher(),
+        universe_path=universe_path, updates_path=updates_path,
+    )
+
+    result = agent.run(tickers=["TEST"], apply=True)
+
+    assert result["run_status"] == "failed"
+    assert result["changed"] == 0
+    assert "current metadata" in result["results"][0]["error"]
