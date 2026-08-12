@@ -53,6 +53,34 @@ FINANCIAL_WEIGHT_BY_TRADEOFF = {
     "strong": 0.08,
 }
 
+# Funds that track the same or an economically identical underlying index --
+# keeping more than one from a group adds a redundant ticker, not real
+# diversification, since they hold (and move with) essentially the same
+# mega-cap constituents. Deliberately conservative: only well-known same-index
+# duplicates, not a general correlation guess we can't justify from universe
+# metadata alone.
+REDUNDANT_FUND_FAMILIES: list[frozenset[str]] = [
+    frozenset({"VOO", "IVV", "SPY"}),  # S&P 500, cap-weighted
+    frozenset({"VTI", "ITOT"}),  # total U.S. market, cap-weighted
+    frozenset({"QQQ", "QQQM"}),  # Nasdaq-100, same index
+]
+
+
+def _dedupe_redundant_funds(ranked_etfs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep only the highest-ranked fund from each redundant-fund family so duplicate
+    tickers tracking the same index don't crowd out genuinely different exposure.
+    Input must already be sorted best-first."""
+    seen_families: set[frozenset[str]] = set()
+    kept: list[dict[str, Any]] = []
+    for item in ranked_etfs:
+        family = next((group for group in REDUNDANT_FUND_FAMILIES if item["ticker"] in group), None)
+        if family:
+            if family in seen_families:
+                continue
+            seen_families.add(family)
+        kept.append(item)
+    return kept
+
 
 def load_universe() -> dict[str, Any]:
     with UNIVERSE_PATH.open(encoding="utf-8") as handle:
@@ -118,6 +146,7 @@ def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[d
 
     stocks = sorted((x for x in eligible if x["type"] == "stock"), key=lambda x: _candidate_score(x, profile), reverse=True)
     etfs = sorted((x for x in eligible if x["type"] == "etf"), key=lambda x: _candidate_score(x, profile), reverse=True)
+    etfs = _dedupe_redundant_funds(etfs)
     stock_slots = min(max(6, limit // 2), len(stocks))
     # Deliberately not re-sorted by score afterward: that used to erase this stock
     # reservation, since ETF "rank" (1-100, dense) beats stock "rank" (up to 1055,
@@ -209,11 +238,14 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
         prices,
         [item["alignment"]["alignment_score"] for item in evaluated],
         [item["income_rank"] for item in evaluated],
+        [item["sector"] for item in evaluated],
         profile,
         profile.max_concentration,
     )
     if result.warning:
         warnings.append(result.warning)
+    if result.note:
+        warnings.append(result.note)
     metrics = portfolio_metrics(prices, result.weights)
     benchmark = benchmark_comparison(market, prices.index)
     percentages, dollars = rounded_allocations(result.weights, request.investment_amount)
