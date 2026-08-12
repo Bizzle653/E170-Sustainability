@@ -62,7 +62,7 @@ git commit -m "Describe the deployment change"
 git push origin main
 ```
 
-Confirm that the new commit appears under the Vercel project's **Deployments** tab. A successful Git push does not by itself prove that Vercel deployed the commit. Commits that only update `classification_agent_state.json` are intentionally skipped to avoid unnecessary production builds; the live status API reads that public state directly from GitHub.
+Confirm that the new commit appears under the Vercel project's **Deployments** tab. A successful Git push does not by itself prove that Vercel deployed the commit. Commits that only update `classification_agent_state.json` are intentionally canceled before the build to avoid unnecessary production work; the live status API reads that public state directly from GitHub. Vercel canceled deployments still appear in deployment history and count toward the platform's deployment quota, but they do not run the application build.
 
 ### Deploy with the Vercel CLI
 
