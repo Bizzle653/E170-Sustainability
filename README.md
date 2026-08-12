@@ -111,7 +111,7 @@ Additional direct frontend origins can be allowed with a comma-separated server-
 GREEN_CANOPY_ALLOWED_ORIGINS=https://example.com,https://preview.example.com
 ```
 
-For autonomous scheduled classification, add `DEEPSEEK_API_KEY` as a GitHub Actions repository secret as well. The workflow needs repository `contents: write` permission because accepted classifications and their public announcements are committed back to `main`.
+For autonomous scheduled classification, add `DEEPSEEK_API_KEY` and `VERCEL_TOKEN` as GitHub Actions repository secrets. The workflow needs repository `contents: write` permission because accepted classifications and their public announcements are committed back to `main`. `VERCEL_TOKEN` lets the same successful run deploy actual classification changes to the linked production project; unchanged research runs do not redeploy the site.
 
 ## Tests and production build
 
@@ -205,7 +205,7 @@ Apply changes and publish announcements into the local data files:
 .\.venv\Scripts\python.exe -m backend.classification_agent --tickers MSFT,ICLN --apply
 ```
 
-`.github/workflows/sustainability-intelligence-agent.yml` runs the same agent daily in bounded batches and commits durable classification metadata back to the repository. It can also be run manually with specific tickers from the GitHub Actions page.
+`.github/workflows/sustainability-intelligence-agent.yml` runs the same agent daily in bounded batches and commits durable classification metadata back to the repository. When at least one public classification announcement is created, the workflow automatically deploys that exact updated source to the linked Vercel production project. A failed production deployment fails the workflow rather than leaving the public site silently stale. The workflow can also be run manually with specific tickers from the GitHub Actions page.
 
 The official-site collector rejects non-public network destinations, follows a bounded number of redirects and documents, caps response sizes, and treats retrieval failures as unavailable evidence rather than inventing a result. A label remains Green Canopy classification metadata—not a third-party ESG rating—even after the AI agent updates it.
 
