@@ -1,6 +1,6 @@
 # Green Canopy
 
-Green Canopy is an educational sustainable-investing portfolio builder. A questionnaire becomes a deterministic investor profile, the FastAPI backend retrieves market data through `yfinance`, and a constrained SciPy optimizer produces a simulated diversified portfolio with transparent limitations. An autonomous Sustainability Intelligence Agent researches and continuously updates Green Canopy's internal classification metadata without controlling portfolio weights or executing trades.
+Green Canopy is an educational sustainable-investing portfolio builder. A questionnaire becomes a deterministic investor profile, the FastAPI backend retrieves market data through `yfinance`, and a constrained SciPy optimizer produces a simulated portfolio — diversified not just by sector label, but by the actual historical correlation between holdings — with transparent limitations. An autonomous Sustainability Intelligence Agent researches and continuously updates Green Canopy's internal classification metadata without controlling portfolio weights or executing trades.
 
 It does not connect to a brokerage, execute trades, predict returns, or provide financial advice.
 
@@ -15,35 +15,70 @@ The other Fortune 1000 constituents are private or do not have a usable public t
 
 Green Canopy does not fetch all 1,055 securities for every portfolio. It screens the local metadata first, then retrieves a bounded candidate set for reliability and provider-rate-limit safety.
 
+## Questionnaire and portfolio construction
+
+The builder (`app/page.tsx`) asks 8 questions: values priorities, philosophy (avoid harm / fund solutions / combination), boundaries (exclusions), building blocks (stocks / ETFs / both — `asset_preference`), size and style (established / smaller and growth-oriented / a mix — `size_style`), objective, a combined timeline-and-risk-comfort step, and investment amount.
+
+`asset_preference` filters which security types are even eligible (`backend/services/portfolio.py::select_candidates`). `size_style` is a scoring tilt, not a hard filter: it nudges candidate ranking using each stock's existing Fortune 1000 rank (`fortune_rank`) as a size proxy and each ETF's category (small/mid-cap-labeled funds vs. everything else), and the same tilt also weighs into which holdings survive the final cut (`generate_portfolio`'s `blended_rank`), not just which ones enter the candidate pool.
+
+### Diversification and concentration limits
+
+The optimizer (`backend/services/portfolio_optimizer.py::optimize_weights`) caps concentration two ways:
+
+- **Sector cap** — no same-labeled sector group exceeds `max_sector_weight` (default 35%) of the portfolio.
+- **Correlation-cluster cap** — securities whose historical returns are highly correlated (≥95%, i.e. functionally near-duplicates) are grouped into a cluster regardless of sector label, and that cluster is capped the same way. This exists because several ETFs from different providers routinely hold nearly identical top constituents (e.g. multiple large-cap growth funds all dominated by the same handful of mega-cap tech names) — a same-label sector cap alone doesn't catch that, so a portfolio could look diversified by ticker count while actually being concentrated in a handful of underlying companies.
+
+Both caps relax to the smallest feasible value (with a `warnings` entry explaining why) rather than making the optimization infeasible, and both are skipped — with an explanatory warning instead of a fabricated 100% "cap" — if the entire matched candidate pool collapses into one group. `diversification_score` in `generate_portfolio` blends the sector-label spread with the same weighted-pairwise-correlation calculation, so the displayed score reflects real overlap between holdings, not just how many distinct sector labels are present.
+
 ## Project structure
 
 ```text
 app/
-  page.tsx                 Questionnaire and marketing site
-  results/page.tsx         Separate portfolio results page
+  page.tsx                        Marketing site and the 8-step portfolio builder
+  results/page.tsx                Results for a newly generated portfolio
+  review/page.tsx                 Intake form for reviewing holdings you already own
+  review/results/page.tsx         Results for a reviewed set of existing holdings
+  methodology/page.tsx            Tabbed hub: how it works, category guide, label updates, agent status
+  learn/page.tsx                  Category guide content (also served as its own tab in the hub)
+  classification-updates/page.tsx Public classification-change feed (also its own tab in the hub)
+  agent-status/page.tsx           Agent coverage/health (also its own tab in the hub)
+  chat/page.tsx                   Standalone AI Assistant page
+  portfolio/page.tsx              Signed-in dashboard for a saved portfolio (requires Supabase)
+  profile/, settings/, login/     Account management (require Supabase)
+components/
+  SiteNav.tsx                     Public-page nav (unified link set across pages)
+  AppShell.tsx                    Signed-in dashboard sidebar/shell
+  Metric.tsx                      Shared stat-card used on results/review-results pages
+  WhyThis.tsx                     Expandable per-holding evidence panel
+  DecisionAssistant.tsx           AI Assistant embedded on the results page
+  AuthProvider.tsx, AccountGate.tsx, MarketPulse.tsx, ChatInterface.tsx, ChatFloatingWidget.tsx
 backend/
   classification_agent.py  Autonomous classification-agent CLI
+  agent.py, agent_tools.py Chatbot agent loop and its yfinance tool
   main.py                  FastAPI endpoints
   models.py                Pydantic request and response contracts
+  rate_limit.py            Per-client request limiting
   services/
     investor_profile.py    Deterministic questionnaire scoring
     market_data.py         yfinance retrieval, metrics, and TTL caches
     classification_intelligence.py Evidence collection, AI classification, versioning, and announcements
     sustainability.py      Transparent alignment calculation
-    portfolio_optimizer.py SciPy optimization and exact rounding
-    portfolio.py           Candidate screening and response assembly
+    portfolio_optimizer.py SciPy optimization, sector/correlation concentration caps, exact rounding
+    portfolio.py           Candidate screening, size/style and asset-preference scoring, response assembly
+    portfolio_review.py    Scoring for the "review my holdings" flow
   data/
     investment_universe.json
     classification_updates.json
     classification_agent_state.json
     import_fortune_universe.py
   tests/                   Offline mocked test suite
-  requirements.txt
+  requirements.txt         Local dev install (adds uvicorn, pytest, httpx)
+requirements.txt           Lean install used by the Vercel serverless function (api/index.py)
 ```
 
 ## Local installation (Windows PowerShell)
 
-Prerequisites: Node.js 20+ and Python 3.11+.
+Prerequisites: Node.js 20+ and Python 3.12 (pinned in `.python-version`; 3.11+ also works).
 
 ```powershell
 npm install
@@ -198,7 +233,7 @@ For each selected company or ETF, the agent:
 
 There is no manual approval step. The automatic-addition threshold defaults to 80%, while removals require at least 90%. Evidence that does not clear every deterministic and model-verification gate leaves the current classification unchanged. Every applied change records the old and new labels, rationale, confidence, exact quotes, source-content hashes, retrieval time, model, policy and prompt versions, possible claim conflicts, and portfolio-impact limitation. Public announcements are paginated at `/classification-updates` and through the classification API.
 
-Legacy static labels are explicitly treated as unreviewed until the Agent verifies their current supporting evidence. Unreviewed or stale labels receive reduced scoring weight and can never produce a high-confidence alignment result. Coverage, the latest run, and the bounded retry queue are public at `/agent-status`.
+Legacy static labels are explicitly treated as unreviewed until the Agent verifies their current supporting evidence. Unreviewed or stale labels receive reduced scoring weight and can never produce a high-confidence alignment result. Coverage, the latest run, and the bounded retry queue are public at `/agent-status`, and the change feed at `/classification-updates` — both are also available as tabs on `/methodology`, alongside the general methodology explanation and the category guide.
 
 Run a dry research pass locally:
 
