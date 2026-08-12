@@ -7,16 +7,167 @@
       "changed": false,
       "confidence": 0.0,
       "evidence_source_count": 1
+    },
+    "VOO": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:13:37.843741+00:00",
+      "changed": true,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "IVV": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:13:51.683905+00:00",
+      "changed": true,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "SPY": {
+      "status": "failed",
+      "last_attempt_at": "2026-08-12T15:13:59.941133+00:00",
+      "failure_count": 1
+    },
+    "VTI": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:14:11.612841+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "QQQ": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:14:16.806518+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VEA": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:14:31.495316+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VUG": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:14:38.166614+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "IEFA": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:14:54.560785+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VTV": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:00.878065+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "BND": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:07.191598+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
+    },
+    "IEMG": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:12.793071+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VXUS": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:20.315002+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "AGG": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:31.521504+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "IWF": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:42.719489+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VWO": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:15:50.893067+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VGT": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:16:02.652510+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "IJH": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:16:10.985251+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "SPYM": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:16:16.113359+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
+    },
+    "VIG": {
+      "status": "failed",
+      "last_attempt_at": "2026-08-12T15:16:23.066990+00:00",
+      "failure_count": 1
+    },
+    "IJR": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T15:16:28.653101+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
     }
   },
-  "retry_queue": [],
+  "retry_queue": [
+    {
+      "ticker": "SPY",
+      "failure_count": 1,
+      "last_attempt_at": "2026-08-12T15:13:59.941133+00:00",
+      "next_retry_at": "2026-08-12T17:14:11.612805+00:00",
+      "last_error": "1 validation error for ClassificationDecision\nexclusion_assessments.0.citations.0.quote\n  String should have at most 600 characters [type=string_too_long, input_value='[{\"ticker\": \"NVDA\", \"nam..., \"weight\": 0.0145635}]', input_type=str]\n    For further information visit https://errors.pydantic.dev/2"
+    },
+    {
+      "ticker": "VIG",
+      "failure_count": 1,
+      "last_attempt_at": "2026-08-12T15:16:23.066990+00:00",
+      "next_retry_at": "2026-08-12T17:16:28.653064+00:00",
+      "last_error": "1 validation error for ClassificationDecision\ntag_assessments.0.citations.1.quote\n  String should have at most 600 characters [type=string_too_long, input_value='[{\"ticker\": \"AVGO\", \"nam..., \"weight\": 0.0216137}]', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/"
+    }
+  ],
   "last_run": {
-    "started_at": "2026-08-12T06:37:32.535400+00:00",
-    "completed_at": "2026-08-12T06:37:38.131511+00:00",
-    "status": "succeeded",
-    "selected": 1,
-    "succeeded": 1,
-    "changed": 0,
-    "failed": 0
+    "started_at": "2026-08-12T15:13:37.843728+00:00",
+    "completed_at": "2026-08-12T15:16:39.279735+00:00",
+    "status": "partial",
+    "selected": 20,
+    "succeeded": 18,
+    "changed": 2,
+    "failed": 2
   }
 }

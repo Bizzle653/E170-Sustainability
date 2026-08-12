@@ -1,4 +1,77 @@
 {
   "schema_version": 1,
-  "updates": []
+  "updates": [
+    {
+      "id": "7b071c18-c8d4-4d53-8767-cb3316bf7dc4",
+      "ticker": "VOO",
+      "name": "VOO",
+      "asset_type": "etf",
+      "published_at": "2026-08-12T15:13:37.843741+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "low_carbon",
+        "governance"
+      ],
+      "new_tags": [
+        "governance",
+        "low_carbon"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "VOO is a broad-market S&P 500 index ETF with no stated sustainability mandate or methodology. The evidence shows only a passive indexing approach and top holdings dominated by large-cap technology companies. There is no evidence of material climate, renewable energy, fair labor, human rights, biodiversity, clean water, sustainable agriculture, circular economy, or governance practices. The low_carbon tag is unsupported because the fund does not employ a lower-carbon methodology or demonstrate weighted lower-carbon exposure. The governance tag is unsupported because no specific governance controls are evidenced. The fossil_fuels exclusion is not supported because the fund holds broad market stocks and may include fossil fuel companies, though no specific holdings are shown.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
+      "id": "0bfd6943-9bc9-4924-b6f0-7f36396add77",
+      "ticker": "IVV",
+      "name": "IVV",
+      "asset_type": "etf",
+      "published_at": "2026-08-12T15:13:51.683905+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "low_carbon",
+        "governance"
+      ],
+      "new_tags": [
+        "governance",
+        "low_carbon"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "IVV is a broad-market S&P 500 index ETF with no stated sustainability mandate. The evidence shows only a generic index-tracking strategy and top holdings that include major technology and financial companies. There is no evidence of a low-carbon methodology or weighted lower-carbon exposure, nor any specific governance, climate, or other sustainability practices. The fossil fuel exclusion is not supported as the fund holds broad market exposure without any exclusionary screen.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    }
+  ]
 }

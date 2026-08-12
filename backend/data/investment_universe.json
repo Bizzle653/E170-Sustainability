@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-23",
+  "version": "2026-08-12T15:16:39Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -13,20 +13,46 @@
       "type": "etf",
       "sector": "Diversified",
       "tags": [
-        "low_carbon",
-        "governance"
+        "governance",
+        "low_carbon"
       ],
-      "rank": 1
+      "rank": 1,
+      "exclusions": [],
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-12T15:13:37.843741+00:00",
+        "last_changed_at": "2026-08-12T15:13:37.843741+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "IVV",
       "type": "etf",
       "sector": "Diversified",
       "tags": [
-        "low_carbon",
-        "governance"
+        "governance",
+        "low_carbon"
       ],
-      "rank": 2
+      "rank": 2,
+      "exclusions": [],
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-12T15:13:51.683905+00:00",
+        "last_changed_at": "2026-08-12T15:13:51.683905+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "SPY",
@@ -44,7 +70,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 4
+      "rank": 4,
+      "exclusions": []
     },
     {
       "ticker": "QQQ",
@@ -54,7 +81,8 @@
         "climate",
         "governance"
       ],
-      "rank": 5
+      "rank": 5,
+      "exclusions": []
     },
     {
       "ticker": "VEA",
@@ -63,7 +91,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 6
+      "rank": 6,
+      "exclusions": []
     },
     {
       "ticker": "VUG",
@@ -73,7 +102,8 @@
         "climate",
         "governance"
       ],
-      "rank": 7
+      "rank": 7,
+      "exclusions": []
     },
     {
       "ticker": "IEFA",
@@ -82,7 +112,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 8
+      "rank": 8,
+      "exclusions": []
     },
     {
       "ticker": "GLD",
@@ -98,7 +129,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 10
+      "rank": 10,
+      "exclusions": []
     },
     {
       "ticker": "BND",
@@ -107,7 +139,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 11
+      "rank": 11,
+      "exclusions": []
     },
     {
       "ticker": "IEMG",
@@ -116,7 +149,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 12
+      "rank": 12,
+      "exclusions": []
     },
     {
       "ticker": "VXUS",
@@ -125,7 +159,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 13
+      "rank": 13,
+      "exclusions": []
     },
     {
       "ticker": "AGG",
@@ -134,7 +169,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 14
+      "rank": 14,
+      "exclusions": []
     },
     {
       "ticker": "IWF",
@@ -144,7 +180,8 @@
         "climate",
         "governance"
       ],
-      "rank": 15
+      "rank": 15,
+      "exclusions": []
     },
     {
       "ticker": "VWO",
@@ -153,7 +190,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 16
+      "rank": 16,
+      "exclusions": []
     },
     {
       "ticker": "VGT",
@@ -163,7 +201,8 @@
         "climate",
         "circular_economy"
       ],
-      "rank": 17
+      "rank": 17,
+      "exclusions": []
     },
     {
       "ticker": "IJH",
@@ -172,7 +211,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 18
+      "rank": 18,
+      "exclusions": []
     },
     {
       "ticker": "SPYM",
@@ -181,7 +221,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 19
+      "rank": 19,
+      "exclusions": []
     },
     {
       "ticker": "VIG",
@@ -199,7 +240,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 21
+      "rank": 21,
+      "exclusions": []
     },
     {
       "ticker": "VO",
