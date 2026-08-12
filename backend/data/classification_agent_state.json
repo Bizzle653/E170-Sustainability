@@ -2,27 +2,21 @@
   "schema_version": 1,
   "checks": {
     "MSFT": {
-      "status": "failed",
-      "last_attempt_at": "2026-08-12T06:25:24.485301+00:00",
-      "failure_count": 1
+      "status": "succeeded",
+      "last_checked_at": "2026-08-12T06:31:20.917187+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
     }
   },
-  "retry_queue": [
-    {
-      "ticker": "MSFT",
-      "failure_count": 1,
-      "last_attempt_at": "2026-08-12T06:25:24.485301+00:00",
-      "next_retry_at": "2026-08-12T08:25:29.571332+00:00",
-      "last_error": "Incomplete classification response; missing: biodiversity, circular_economy, clean_water, fair_labor, human_rights, low_carbon, sustainable_agriculture"
-    }
-  ],
+  "retry_queue": [],
   "last_run": {
-    "started_at": "2026-08-12T06:25:24.485276+00:00",
-    "completed_at": "2026-08-12T06:25:29.571363+00:00",
-    "status": "failed",
+    "started_at": "2026-08-12T06:31:20.917159+00:00",
+    "completed_at": "2026-08-12T06:31:26.552296+00:00",
+    "status": "succeeded",
     "selected": 1,
-    "succeeded": 0,
+    "succeeded": 1,
     "changed": 0,
-    "failed": 1
+    "failed": 0
   }
 }
