@@ -180,7 +180,7 @@ export default function Home() {
 
       <section className="section darkSection" id="approach">
         <div className="approachGrid">
-          <div><span className="eyebrow lightEyebrow">A more personal approach</span><h2>A broad universe, screened for your priorities.</h2><p>The MVP begins with public-company coverage drawn from the Fortune 1000 scope and 100 of the largest U.S.-listed ETFs. It retrieves only the bounded candidate set needed for each simulation.</p><div className="pillRow">{["Climate", "Fair labor", "Biodiversity", "Clean water", "Renewables", "Circularity"].map((item) => <span key={item}>{item}</span>)}</div></div>
+          <div><span className="eyebrow lightEyebrow">A more personal approach</span><h2>A broad universe, screened for your priorities.</h2><p>Today, that includes every Fortune 1000 company and the 100 largest U.S.-listed ETFs — real, recognizable companies, not a limited sample.</p><div className="pillRow">{["Climate", "Fair labor", "Biodiversity", "Clean water", "Renewables", "Circularity"].map((item) => <span key={item}>{item}</span>)}</div></div>
           <div className="analysisPanel"><span className="panelKicker">What we analyze</span>{[
             ["Values alignment", "Your priorities and exclusions"],
             ["Classification tags", "Climate, labor, water, and more — transparently scored"],
