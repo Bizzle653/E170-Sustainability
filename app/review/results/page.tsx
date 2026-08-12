@@ -5,6 +5,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { AlignmentDetail, WhyThis } from "@/components/WhyThis";
 import { downloadCsv } from "@/lib/csv";
 import { SiteNav } from "@/components/SiteNav";
+import { Metric } from "@/components/Metric";
 
 type Holding = {
   ticker: string;
@@ -142,7 +143,13 @@ export default function ReviewResultsPage() {
           <Metric label="Historical volatility" value={pct(review.annualized_volatility)} note="How bumpy the ride is" hint="How much your combined holdings have swung year to year. Higher means a bumpier ride, not necessarily a worse outcome." compare={review.benchmark && `S&P 500: ${pct(review.benchmark.annualized_volatility)}`} />
         )}
         {review.maximum_drawdown != null && (
-          <Metric label="Maximum drawdown" value={pct(review.maximum_drawdown)} note="Worst historical drop" hint="The biggest fall from a peak to a low point over the past 3 years — the worst-case dip you'd have lived through." compare={review.benchmark && `S&P 500: ${pct(review.benchmark.maximum_drawdown)}`} />
+          <Metric
+            label="Maximum drawdown"
+            value={pct(review.maximum_drawdown)}
+            note="Worst historical drop"
+            hint={`The biggest fall from a peak to a low point over the past 3 years — the worst-case dip you'd have lived through. For your ${money(review.total_value)}, that would be a drop to about ${money(review.total_value * (1 + review.maximum_drawdown))} before recovering.`}
+            compare={review.benchmark && `S&P 500: ${pct(review.benchmark.maximum_drawdown)}`}
+          />
         )}
       </section>
 
@@ -229,17 +236,6 @@ export default function ReviewResultsPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function Metric({ label, value, note, hint, compare }: { label: string; value: string; note: string; hint?: string; compare?: string | null | false }) {
-  return (
-    <div title={hint}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
-      {compare && <small className="benchmarkNote">{compare}</small>}
-    </div>
   );
 }
 

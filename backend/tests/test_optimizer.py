@@ -13,6 +13,25 @@ def sample_prices(columns=8):
     return pd.DataFrame(100 * np.cumprod(1 + returns, axis=0), index=dates, columns=[f"T{i}" for i in range(columns)])
 
 
+def correlated_prices(columns=8, correlated=4):
+    # The first `correlated` columns are a shared return series plus tiny independent
+    # noise -- like several large-cap growth ETFs from different providers tracking
+    # overlapping indices, they move together (correlation ~0.98+) despite having
+    # nothing in common at the label level. The rest are independent.
+    rng = np.random.default_rng(7)
+    dates = pd.date_range("2023-01-01", periods=500, freq="B")
+    shared = rng.normal(0.0004, 0.01, size=len(dates))
+    data = {}
+    for i in range(columns):
+        if i < correlated:
+            noise = rng.normal(0, 0.001, size=len(dates))
+            series = shared + noise
+        else:
+            series = rng.normal(0.0003, 0.01, size=len(dates))
+        data[f"T{i}"] = 100 * np.cumprod(1 + series)
+    return pd.DataFrame(data, index=dates)
+
+
 def test_weights_total_100_and_respect_maximum():
     profile = build_profile(QuestionnaireAnswers(max_concentration=0.2))
     sectors = [f"Sector{i}" for i in range(8)]
@@ -65,6 +84,34 @@ def test_sector_cap_auto_relaxes_instead_of_forcing_equal_weight_fallback():
     dominant_sector_weight = result.weights[:6].sum()
     assert dominant_sector_weight <= 0.6 + 1e-4  # the smallest feasible cap for this shape
     assert dominant_sector_weight < 0.75 - 1e-4  # strictly better than the old fallback outcome
+
+
+def test_correlation_cluster_is_capped_despite_different_sector_labels():
+    profile = build_profile(QuestionnaireAnswers(max_concentration=0.2))
+    prices = correlated_prices()
+    # Every candidate gets its own distinct sector label, so the sector-cap constraint
+    # never engages -- only the correlation-cluster cap can catch this. The first four
+    # are ranked far above the rest on alignment and income, so an optimizer blind to
+    # correlation would pile into them exactly like the reported real-world case
+    # (several differently-labeled growth ETFs that all move together).
+    sectors = [f"Sector{i}" for i in range(8)]
+    alignment = [95, 95, 95, 95, 10, 10, 10, 10]
+    income = [1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
+    result = optimize_weights(prices, alignment, income, sectors, profile, 0.2)
+    assert not result.warning
+    correlated_weight = result.weights[:4].sum()
+    assert correlated_weight <= 0.35 + 1e-4
+
+
+def test_uncorrelated_candidates_are_unaffected_by_the_correlation_cap():
+    profile = build_profile(QuestionnaireAnswers(max_concentration=0.2))
+    sectors = [f"Sector{i}" for i in range(8)]
+    result = optimize_weights(sample_prices(), [70] * 8, [0.5] * 8, sectors, profile, 0.2)
+    # i.i.d. synthetic columns have near-zero real correlation, so every candidate
+    # should land in its own singleton cluster and the new constraint shouldn't bind.
+    assert not result.warning
+    assert np.isclose(result.weights.sum(), 1)
+    assert result.weights.max() <= 0.20001
 
 
 def test_singleton_sector_does_not_add_a_constraint():

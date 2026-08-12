@@ -39,7 +39,7 @@ type ClassificationUpdate = {
 
 const label = (value: string) => value.replaceAll("_", " ");
 
-export default function ClassificationUpdatesPage() {
+export function ClassificationUpdatesContent() {
   const [updates, setUpdates] = useState<ClassificationUpdate[]>([]);
   const [total, setTotal] = useState(0);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -101,8 +101,7 @@ export default function ClassificationUpdatesPage() {
   }
 
   return (
-    <main className="classificationPage">
-      <SiteNav />
+    <>
       <section className="classificationHero">
         <span className="eyebrow">Autonomous AI classification</span>
         <h1>Every label change is public.</h1>
@@ -194,6 +193,15 @@ export default function ClassificationUpdatesPage() {
           </button>
         )}
       </section>
+    </>
+  );
+}
+
+export default function ClassificationUpdatesPage() {
+  return (
+    <main className="classificationPage">
+      <SiteNav />
+      <ClassificationUpdatesContent />
     </main>
   );
 }

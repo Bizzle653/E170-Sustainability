@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/components/AuthProvider";
 
 export function SiteNav() {
+  const {user} = useAuth();
   return (
     <nav className="resultsNav">
       <Link className="brand" href="/">
@@ -11,11 +13,13 @@ export function SiteNav() {
       </Link>
       <div className="navActions">
         <Link className="backButton navButton" href="/review">Review holdings</Link>
-        <Link className="backButton navButton" href="/learn">Learn</Link>
-        <Link className="backButton navButton" href="/methodology">Methodology</Link>
-        <Link className="backButton navButton" href="/classification-updates">AI label updates</Link>
-        <Link className="backButton navButton" href="/agent-status">Agent status</Link>
+        <Link className="backButton navButton" href="/methodology">How it works</Link>
         <Link className="backButton navButton" href="/chat">AI Assistant</Link>
+        {user ? (
+          <Link className="backButton navButton" href="/portfolio">My dashboard</Link>
+        ) : (
+          <Link className="backButton navButton" href="/login">Sign in</Link>
+        )}
         <Link className="button buttonSmall" href="/">Build portfolio</Link>
       </div>
     </nav>

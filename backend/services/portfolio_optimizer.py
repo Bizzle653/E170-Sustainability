@@ -17,6 +17,74 @@ class OptimizationResult:
     note: str | None = None
 
 
+def _grouped_cap_constraints(
+    groups: list[list[int]],
+    max_weight: float,
+    cap: float,
+    label: str,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Cap the combined weight of any group (sector, or correlation cluster) with more
+    than one member. A singleton group can never breach a cap that's already >= the
+    per-position max, so it's skipped -- and it still counts toward uncapped_capacity
+    below. If the candidate pool itself is this concentrated, a fixed cap can make the
+    sum-to-1 requirement infeasible alongside the per-position bounds; relax it to the
+    smallest value that keeps the problem solvable, rather than let SLSQP fail and
+    silently fall back to equal weight -- which respects no cap at all."""
+    capped_groups = [indices for indices in groups if len(indices) > 1]
+    if not capped_groups:
+        return [], None
+    uncapped_capacity = sum(max_weight for indices in groups if len(indices) == 1)
+    min_feasible_cap = (1 - uncapped_capacity) / len(capped_groups)
+    effective_cap = max(cap, min_feasible_cap)
+    if effective_cap >= 1 - 1e-9:
+        # The whole matched pool collapsed into (effectively) one group -- no cap can
+        # meaningfully bind here. Worse, a constraint that sits exactly on its own
+        # boundary for every feasible point (sum <= ~1 when the group already has to
+        # sum to ~1) can destabilize SLSQP rather than act as a harmless no-op, so skip
+        # adding it and say plainly why, instead of reporting a hollow "100% cap."
+        return [], (
+            f"Every matched candidate ended up in the same {label.lower()} group, so no "
+            f"{label.lower()} concentration cap could be applied to this selection."
+        )
+    note = None
+    if effective_cap > cap + 1e-9:
+        note = (
+            f"{label} concentration cap was widened to {effective_cap:.0%} (from {cap:.0%}) "
+            f"because the matching investments were concentrated in a few {label.lower()}s."
+        )
+    constraints = [
+        {"type": "ineq", "fun": (lambda w, idx=indices: effective_cap - w[idx].sum())}
+        for indices in capped_groups
+    ]
+    return constraints, note
+
+
+def _correlation_clusters(correlation: np.ndarray, threshold: float) -> list[list[int]]:
+    """Group candidate indices into connected components wherever pairwise historical
+    return correlation is at or above the threshold, so that positions which actually
+    move together get treated as one concentration risk regardless of sector label --
+    e.g. several large-cap growth ETFs from different providers tracking overlapping
+    indices, which a same-label sector cap can't see if each is tagged differently."""
+    n = correlation.shape[0]
+    visited = [False] * n
+    clusters: list[list[int]] = []
+    for start in range(n):
+        if visited[start]:
+            continue
+        stack = [start]
+        visited[start] = True
+        component: list[int] = []
+        while stack:
+            node = stack.pop()
+            component.append(node)
+            for neighbor in range(n):
+                if not visited[neighbor] and neighbor != node and correlation[node, neighbor] >= threshold:
+                    visited[neighbor] = True
+                    stack.append(neighbor)
+        clusters.append(component)
+    return clusters
+
+
 def optimize_weights(
     prices: pd.DataFrame,
     alignment: list[float],
@@ -25,6 +93,15 @@ def optimize_weights(
     profile: InvestorProfile,
     max_weight: float,
     max_sector_weight: float = 0.35,
+    max_correlation_weight: float = 0.35,
+    # Ordinary equity funds/stocks routinely sit at 0.7-0.9 correlation with each other
+    # and the broad market -- that's normal beta, not redundancy. 0.95+ is reserved for
+    # positions that are functionally near-duplicates (e.g. several large-cap growth
+    # index funds tracking overlapping benchmarks), which is what this cap should catch.
+    # A looser threshold chains ordinary correlated assets into one giant cluster via
+    # transitive (single-linkage) grouping, which both misses the point of the cap and
+    # can produce a degenerate all-encompassing group (see _grouped_cap_constraints).
+    correlation_threshold: float = 0.95,
     force_failure: bool = False,
 ) -> OptimizationResult:
     returns = prices.pct_change().dropna(how="any")
@@ -32,6 +109,7 @@ def optimize_weights(
         raise ValueError("At least five investments with overlapping history are required")
     annual_returns = returns.mean().to_numpy() * 252
     covariance = returns.cov().to_numpy() * 252
+    correlation = returns.corr().to_numpy()
     n = len(annual_returns)
     sustainability = np.asarray(alignment, dtype=float) / 100
     income = np.asarray(income_ranks, dtype=float)
@@ -65,38 +143,28 @@ def optimize_weights(
     bounds = [(0.02, max_weight)] * n
     initial = np.repeat(1 / n, n)
 
-    # Backstop against concentration that the per-position cap alone can't see: several
-    # individually-capped positions in the same sector (e.g. three different mega-cap
-    # tech names, or overlapping broad-market funds sharing a sector label) can still
-    # add up to most of the portfolio. A sector with only one candidate can never
-    # breach a cap that's already >= the per-position max, so it's skipped.
+    # Two independent backstops against concentration that the per-position cap alone
+    # can't see: several individually-capped positions can still add up to most of the
+    # portfolio if they share a sector label, OR if they simply move together (which a
+    # label can miss entirely -- e.g. same-sector ETFs from different providers, or a
+    # stock alongside a fund that already holds a large position in it).
     sector_groups: dict[str, list[int]] = {}
     for index, sector in enumerate(sectors):
         sector_groups.setdefault(sector, []).append(index)
-    capped_groups = [indices for indices in sector_groups.values() if len(indices) > 1]
+    correlation_clusters = _correlation_clusters(correlation, correlation_threshold)
 
     constraints: list[dict[str, Any]] = [{"type": "eq", "fun": lambda w: np.sum(w) - 1}]
-    note: str | None = None
-    if capped_groups:
-        uncapped_capacity = sum(max_weight for indices in sector_groups.values() if len(indices) == 1)
-        # If the candidate pool itself is this concentrated (e.g. a niche priority profile
-        # matched mostly one sector), a fixed cap can make the sum-to-1 requirement
-        # infeasible alongside the per-position bounds. Relax the cap to the smallest
-        # value that keeps the problem solvable, rather than let SLSQP fail and silently
-        # fall back to equal weight -- which respects no cap at all and would leave the
-        # dominant sector even more concentrated than a relaxed cap does.
-        min_feasible_cap = (1 - uncapped_capacity) / len(capped_groups)
-        effective_cap = max(max_sector_weight, min_feasible_cap)
-        if effective_cap > max_sector_weight + 1e-9:
-            note = (
-                f"Sector concentration cap was widened to {effective_cap:.0%} (from {max_sector_weight:.0%}) "
-                "because the matching investments were concentrated in a few sectors."
-            )
-        for indices in capped_groups:
-            constraints.append({
-                "type": "ineq",
-                "fun": (lambda w, idx=indices: effective_cap - w[idx].sum()),
-            })
+    sector_constraints, sector_note = _grouped_cap_constraints(
+        list(sector_groups.values()), max_weight, max_sector_weight, "Sector"
+    )
+    correlation_constraints, correlation_note = _grouped_cap_constraints(
+        correlation_clusters, max_weight, max_correlation_weight, "Correlation"
+    )
+    constraints += sector_constraints + correlation_constraints
+    # Each axis relaxes its own cap independently if it alone would be infeasible; the
+    # two axes aren't jointly solved for feasibility, but the equal-weight fallback
+    # below already covers the rare case where SLSQP still can't satisfy both at once.
+    note = " ".join(item for item in (sector_note, correlation_note) if item) or None
 
     result = minimize(
         objective,

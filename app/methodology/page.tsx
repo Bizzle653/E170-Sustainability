@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { SiteNav } from "@/components/SiteNav";
+import { LearnContent } from "@/app/learn/page";
+import { ClassificationUpdatesContent } from "@/app/classification-updates/page";
+import { AgentStatusContent } from "@/app/agent-status/page";
 
 const CATEGORIES = [
   ["Climate", "Emissions, decarbonization, low-carbon energy"],
@@ -22,11 +26,9 @@ const STEPS: [string, string, string][] = [
   ["04", "A constrained optimizer picks weights", "Among your chosen holdings, a SciPy optimizer balances expected return, historical risk, and alignment score to decide how much of each to hold, subject to your maximum concentration per position."],
 ];
 
-export default function MethodologyPage() {
+export function MethodologyContent() {
   return (
-    <main className="resultsPage">
-      <SiteNav />
-
+    <>
       <header className="resultsHero">
         <div>
           <span className="eyebrow">Methodology</span>
@@ -134,6 +136,38 @@ export default function MethodologyPage() {
           <small>Sources: Yahoo Finance via yfinance · Green Canopy classification metadata</small>
         </div>
       </section>
+    </>
+  );
+}
+
+const TABS: [string, string, () => React.JSX.Element][] = [
+  ["How it works", "how-it-works", MethodologyContent],
+  ["Category guide", "category-guide", LearnContent],
+  ["Label updates", "label-updates", ClassificationUpdatesContent],
+  ["Agent status", "agent-status", AgentStatusContent],
+];
+
+export default function MethodologyHubPage() {
+  const [activeTab, setActiveTab] = useState(TABS[0][1]);
+  const ActiveContent = TABS.find(([, id]) => id === activeTab)?.[2] ?? MethodologyContent;
+
+  return (
+    <main className="resultsPage">
+      <SiteNav />
+      <div className="hubTabs" role="tablist" aria-label="How Green Canopy works">
+        {TABS.map(([label, id]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={activeTab === id}
+            className={activeTab === id ? "active" : ""}
+            onClick={() => setActiveTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <ActiveContent />
     </main>
   );
 }

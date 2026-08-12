@@ -67,11 +67,9 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-export default function LearnPage() {
+export function LearnContent() {
   return (
-    <main className="resultsPage">
-      <SiteNav />
-
+    <>
       <header className="resultsHero">
         <div>
           <span className="eyebrow">Learn</span>
@@ -113,6 +111,15 @@ export default function LearnPage() {
           and tags companies, see the <Link href="/methodology" style={{fontWeight: 800}}>methodology page</Link>.
         </p>
       </section>
+    </>
+  );
+}
+
+export default function LearnPage() {
+  return (
+    <main className="resultsPage">
+      <SiteNav />
+      <LearnContent />
     </main>
   );
 }

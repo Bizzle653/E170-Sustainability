@@ -115,6 +115,36 @@ def _philosophy_adjustment(item: dict[str, Any], philosophy: str) -> float:
     return 0.0
 
 
+
+# ETF categories that specifically target smaller companies -- used as the size signal
+# for funds, since a fund's own asset-rank reflects how mainstream the FUND is, not the
+# size of what it actually holds (a small-cap index fund can itself be large and popular).
+SMALLER_STYLE_ETF_SECTORS = {"Small Cap Equity", "Mid Cap Equity", "Extended Market"}
+# Calibrated against the real universe: top climate-tagged growth ETFs score ~4.6 on
+# match*10 alone versus ~0.1 for small/mid-cap funds with no climate tag, so a weight
+# much below ~5 can never flip that matchup and the question would have no visible
+# effect for ETFs. At 5, an explicit size choice can outweigh a priority-tag match, but
+# a fixed size_style still ranks differently across different priorities (verified
+# against the real universe), so this doesn't erase values-matching -- it competes with
+# it, which is the intent of a preference the user chose to state explicitly.
+SIZE_STYLE_TILT_WEIGHT = 5.0
+
+
+def _size_style_adjustment(item: dict[str, Any], size_style: str) -> float:
+    """Nudge candidate ranking toward large, established names or toward smaller, less
+    prominent ones. Stocks use their existing Fortune 1000 rank (1 = largest by revenue,
+    1000 = smallest in this universe) as a size proxy; ETFs use their category, since
+    Fortune rank doesn't apply to funds."""
+    if size_style == "mix":
+        return 0.0
+    if item["type"] == "stock":
+        established_percentile = 1 - (item.get("fortune_rank", 1000) / 1000)
+    else:
+        established_percentile = 0.0 if item.get("sector") in SMALLER_STYLE_ETF_SECTORS else 1.0
+    tilt = established_percentile if size_style == "established" else (1 - established_percentile)
+    return SIZE_STYLE_TILT_WEIGHT * tilt
+
+
 def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     priority = profile.sustainability_priority_weights
     classification = item.get("classification") or {}
@@ -127,14 +157,18 @@ def _candidate_score(item: dict[str, Any], profile: InvestorProfile) -> float:
     # priority-tag match and crowd every individual stock out of recommendations.
     rank_tiebreaker = 1 / (100 * max(1, item.get("rank", 9999)))
     philosophy_adjustment = _philosophy_adjustment(item, profile.company_preference)
-    return match * 10 + diversified + rank_tiebreaker + philosophy_adjustment
+    size_style_adjustment = _size_style_adjustment(item, profile.size_style)
+    return match * 10 + diversified + rank_tiebreaker + philosophy_adjustment + size_style_adjustment
 
 
-def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+def select_candidates(
+    profile: InvestorProfile, limit: int = 24, asset_preference: str = "both"
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     universe = load_universe()["securities"]
     eligible: list[dict[str, Any]] = []
     excluded: list[dict[str, str]] = []
     requested_exclusions = set(profile.exclusions)
+    wanted_type = {"stocks_only": "stock", "etfs_only": "etf"}.get(asset_preference)
     for item in universe:
         conflict = requested_exclusions.intersection(item.get("exclusions", []))
         if conflict:
@@ -144,12 +178,21 @@ def select_candidates(profile: InvestorProfile, limit: int = 24) -> tuple[list[d
         if item.get("sector") == "Leveraged Equity":
             excluded.append({"ticker": item["ticker"], "reason": "Leveraged ETF excluded by portfolio policy"})
             continue
+        # A blanket asset-type filter isn't a per-security transparency concern the way
+        # a specific exclusion-tag conflict is, so it's silently skipped rather than
+        # logged -- logging it would flood excluded_investments with hundreds of
+        # boring entries and bury the exclusions actually worth explaining.
+        if wanted_type and item["type"] != wanted_type:
+            continue
         eligible.append(item)
 
     stocks = sorted((x for x in eligible if x["type"] == "stock"), key=lambda x: _candidate_score(x, profile), reverse=True)
     etfs = sorted((x for x in eligible if x["type"] == "etf"), key=lambda x: _candidate_score(x, profile), reverse=True)
     etfs = _dedupe_redundant_funds(etfs)
-    stock_slots = min(max(6, limit // 2), len(stocks))
+    # With no ETF candidates competing for the other half, an all-stock preference
+    # should get the full limit's worth of stock slots rather than the mixed-pool
+    # reservation below -- otherwise stocks_only silently halves its own candidate pool.
+    stock_slots = min(limit, len(stocks)) if wanted_type == "stock" else min(max(6, limit // 2), len(stocks))
     # Deliberately not re-sorted by score afterward: that used to erase this stock
     # reservation, since ETF "rank" (1-100, dense) beats stock "rank" (up to 1055,
     # sparse) as a tiebreaker on almost every tie, letting ETFs silently crowd out
@@ -162,7 +205,7 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     active_priorities = [key for key, weight in profile.sustainability_priority_weights.items() if weight > 0]
     universe_by_ticker = {item["ticker"]: item for item in load_universe()["securities"]}
     target_holdings = max(request.number_of_holdings, math.ceil(1 / profile.max_concentration))
-    candidates, excluded = select_candidates(profile, max(24, target_holdings * 3))
+    candidates, excluded = select_candidates(profile, max(24, target_holdings * 3), request.asset_preference)
     evaluated: list[dict[str, Any]] = []
     warnings: list[str] = []
 
@@ -222,14 +265,25 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     alignment_ranks = _percentile_ranks([item["alignment"]["alignment_score"] for item in evaluated])
     growth_ranks = _percentile_ranks([item["risk_adjusted_return"] for item in evaluated])
     income_ranks = _percentile_ranks([item["dividend_yield"] for item in evaluated])
+    # select_candidates already tilts *which* securities reach this pool, but without
+    # also weighing in here, a strong recent run in large-cap growth names can still
+    # out-rank every small/mid-cap candidate on financial performance alone and erase
+    # the tilt from the final cut. Only carves out weight when the user chose a size
+    # preference at all -- "mix" (the default, and every profile predating this field)
+    # must reduce exactly to the original two-way blend.
+    size_style_weight = 0.0 if profile.size_style == "mix" else 0.25
+    size_style_ranks = _percentile_ranks([_size_style_adjustment(item, profile.size_style) for item in evaluated])
     # return_priority (from the "long-term growth" vs. "income and preservation" answer)
     # decides what kind of financial performance counts toward the financial_weight share
     # set above -- growth-focused investors are ranked mostly on risk-adjusted return,
     # income-focused investors mostly on dividend yield percentile.
-    for item, alignment_rank, growth_rank, income_rank in zip(evaluated, alignment_ranks, growth_ranks, income_ranks):
+    for item, alignment_rank, growth_rank, income_rank, size_style_rank in zip(
+        evaluated, alignment_ranks, growth_ranks, income_ranks, size_style_ranks
+    ):
         financial_rank = profile.return_priority * growth_rank + (1 - profile.return_priority) * income_rank
         item["income_rank"] = income_rank
-        item["blended_rank"] = financial_weight * financial_rank + (1 - financial_weight) * alignment_rank
+        core_rank = financial_weight * financial_rank + (1 - financial_weight) * alignment_rank
+        item["blended_rank"] = (1 - size_style_weight) * core_rank + size_style_weight * size_style_rank
     evaluated.sort(key=lambda item: item["blended_rank"], reverse=True)
     evaluated = evaluated[:target_holdings]
     prices = pd.concat([item["history"] for item in evaluated], axis=1, join="inner").dropna()
@@ -282,10 +336,24 @@ def generate_portfolio(request: PortfolioRequest, market: MarketDataService) -> 
     sector_totals: Counter[str] = Counter()
     for allocation in allocations:
         sector_totals[allocation.sector] += allocation.weight
-    diversification_score = round(
-        max(0, min(100, (1 - sum((value / 100) ** 2 for value in sector_totals.values())) * 125)),
-        1,
+    sector_component = max(0, min(100, (1 - sum((value / 100) ** 2 for value in sector_totals.values())) * 125))
+    # A portfolio can look diversified by sector label alone while several
+    # differently-labeled holdings actually hold much the same underlying companies
+    # (e.g. a handful of large-cap growth ETFs from different providers). Blend in the
+    # weighted-average pairwise return correlation so the displayed score reflects real
+    # overlap, not just labels -- same weighted-pairwise-correlation identity used to
+    # detect correlation clusters in optimize_weights, just applied to the final weights.
+    weights_fraction = result.weights
+    correlation_matrix = prices.pct_change().dropna(how="any").corr().to_numpy()
+    sum_sq_weights = float(np.sum(weights_fraction**2))
+    denominator = 1 - sum_sq_weights
+    weighted_pairwise_correlation = (
+        (float(weights_fraction @ correlation_matrix @ weights_fraction) - sum_sq_weights) / denominator
+        if denominator > 1e-9
+        else 0.0
     )
+    correlation_component = max(0, min(100, (1 - weighted_pairwise_correlation) * 100))
+    diversification_score = round(max(0, min(100, 0.5 * sector_component + 0.5 * correlation_component)), 1)
     retrieved_at = datetime.now(timezone.utc).isoformat()
     narrative = compose_portfolio_narrative(
         [{"name": a.name, "weight": a.weight, "matched_priorities": a.matched_priorities} for a in allocations],

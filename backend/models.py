@@ -28,6 +28,7 @@ class QuestionnaireAnswers(BaseModel):
     tradeoff: Literal["none", "small", "moderate", "strong"] = "small"
     exclusions: list[str] = Field(default_factory=list)
     max_concentration: float = Field(default=0.20, ge=0.10, le=0.20)
+    size_style: Literal["established", "smaller_growth", "mix"] = "mix"
 
 
 class InvestorProfile(BaseModel):
@@ -42,6 +43,7 @@ class InvestorProfile(BaseModel):
     sustainability_tradeoff: str
     company_preference: str
     max_concentration: float
+    size_style: str = "mix"
 
 
 class ProfileRequest(BaseModel):
@@ -53,6 +55,7 @@ class PortfolioRequest(BaseModel):
     answers: QuestionnaireAnswers | None = None
     profile: InvestorProfile | None = None
     number_of_holdings: int = Field(default=8, ge=5, le=15)
+    asset_preference: Literal["both", "stocks_only", "etfs_only"] = "both"
 
     @model_validator(mode="after")
     def profile_or_answers(self) -> "PortfolioRequest":

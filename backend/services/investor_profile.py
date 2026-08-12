@@ -47,4 +47,5 @@ def build_profile(answers: QuestionnaireAnswers) -> InvestorProfile:
         sustainability_tradeoff=answers.tradeoff,
         company_preference=answers.philosophy,
         max_concentration=answers.max_concentration,
+        size_style=answers.size_style,
     )

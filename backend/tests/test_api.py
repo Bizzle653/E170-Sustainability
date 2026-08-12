@@ -124,6 +124,20 @@ def test_portfolio_api_totals_exclusions_and_schema(monkeypatch):
     assert any(item["ticker"] in {"XOM", "CVX", "WMB", "XLE"} for item in payload["excluded_investments"])
 
 
+def test_portfolio_api_respects_asset_preference(monkeypatch):
+    monkeypatch.setattr(main_module, "market_data", FakeMarket())
+    client = TestClient(main_module.app)
+    response = client.post("/api/portfolio/generate", json={
+        "investment_amount": 10000,
+        "asset_preference": "etfs_only",
+        "answers": {"priorities": ["climate"], "risk": "stay_invested"},
+    })
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["allocations"]
+    assert all(item["asset_type"] == "etf" for item in payload["allocations"])
+
+
 def test_search_quotes_and_company_review(monkeypatch):
     monkeypatch.setattr(main_module, "market_data", FakeMarket())
     client = TestClient(main_module.app)

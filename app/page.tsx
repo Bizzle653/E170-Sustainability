@@ -17,6 +17,8 @@ type Answers = {
   exclusions: string[];
   max_concentration: number;
   amount: number;
+  asset_preference: string;
+  size_style: string;
 };
 
 const API_URL =
@@ -56,9 +58,10 @@ const steps = [
   ["Your values", "What matters most to you?", "Choose up to three priorities. Order matters: your first choice receives the strongest weight."],
   ["Your philosophy", "How should your money create change?", "Tell us whether you prefer avoiding harmful companies outright, funding solutions directly, or a combination of both."],
   ["Your boundaries", "What should your portfolio avoid?", "Explicit exclusions are treated as constraints, not suggestions."],
+  ["Your building blocks", "Individual companies, funds, or both?", "ETFs bundle many holdings into one ticker; individual stocks let you back specific companies directly."],
+  ["Big names or hidden gems", "Stick with large, well-known companies, or include smaller ones too?", "Smaller, lesser-known companies can grow more, but tend to be bumpier along the way."],
   ["Your objective", "What is this money for?", "Your goal helps balance long-term growth, stability, and income."],
-  ["Your timeline", "When might you need this money?", "A longer runway can support more exposure to market movement."],
-  ["Your comfort level", "How would you handle a difficult year?", "Your response to a hypothetical 20% decline shapes the risk penalty."],
+  ["Your comfort level", "When might you need this money, and how would you handle a difficult year?", "A longer runway can support more exposure to market movement, and your response to a hypothetical 20% decline shapes the risk penalty."],
   ["Starting amount", "How much would you like to invest?", "This illustrative amount determines the dollar allocation in your simulated portfolio."],
 ];
 const loadingStages = [
@@ -89,6 +92,8 @@ export default function Home() {
     exclusions: ["fossil_fuels"],
     max_concentration: 0.2,
     amount: 10000,
+    asset_preference: "both",
+    size_style: "mix",
   });
 
   function toggleList(field: "priorities" | "exclusions", value: string, limit = 99) {
@@ -113,6 +118,7 @@ export default function Home() {
         body: JSON.stringify({
           investment_amount: answers.amount,
           number_of_holdings: 8,
+          asset_preference: answers.asset_preference,
           answers: {
             priorities: answers.priorities,
             goal: answers.goal,
@@ -123,6 +129,7 @@ export default function Home() {
             tradeoff: answers.tradeoff,
             exclusions: answers.exclusions,
             max_concentration: answers.max_concentration,
+            size_style: answers.size_style,
           },
         }),
       });
@@ -151,7 +158,7 @@ export default function Home() {
     <main>
       <nav className="nav">
         <a className="brand" href="#"><span className="brandMark">⌁</span><span>Green Canopy</span></a>
-        <div className="navLinks"><a href="/learn">Learn</a><a href="/methodology">Methodology</a><a href="/classification-updates">AI label updates</a></div>
+        <div className="navLinks"><a href="/methodology">How it works</a><a href="/chat">AI Assistant</a></div>
         <div className="navActions"><a className="backButton navButton" href="/review">Review my holdings</a>{user ? <a className="backButton navButton" href="/portfolio">My dashboard</a> : <a className="backButton navButton" href="/login">Sign in</a>}<button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button></div>
       </nav>
 
@@ -209,10 +216,11 @@ export default function Home() {
               {step === 0 && <div className="choiceGrid">{priorities.map(([key, title, copy]) => <button className={`choiceCard ${answers.priorities.includes(key) ? "selected" : ""}`} onClick={() => toggleList("priorities", key, 3)} key={key}><span>{answers.priorities.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>{copy}</small></button>)}</div>}
               {step === 1 && <OptionList value={answers.philosophy} options={[["avoid_harm","Avoid companies causing harm"],["fund_solutions","Fund direct solutions"],["combination","Combine these approaches"]]} onChange={(philosophy) => setAnswers({...answers, philosophy})} />}
               {step === 2 && <div className="choiceGrid">{exclusions.map(([key, title]) => <button className={`choiceCard compact ${answers.exclusions.includes(key) ? "selected" : ""}`} onClick={() => toggleList("exclusions", key)} key={key}><span>{answers.exclusions.includes(key) ? "✓" : "+"}</span><strong>{title}</strong><small>Exclude from consideration</small></button>)}</div>}
-              {step === 3 && <OptionList value={answers.goal} options={[["long_term_growth","Long-term growth"],["growth_and_stability","Growth and stability"],["income_and_preservation","Income and preservation"]]} onChange={(goal) => setAnswers({...answers, goal})} />}
-              {step === 4 && <OptionList value={answers.horizon} options={[["under_3_years","Under 3 years"],["3_to_10_years","3–10 years"],["10_plus_years","10+ years"]]} onChange={(horizon) => setAnswers({...answers, horizon})} />}
-              {step === 5 && <><OptionList value={answers.risk} options={[["move_to_safety","Reduce risk after a decline"],["stay_invested","Stay invested"],["invest_more","Invest more at lower prices"]]} onChange={(risk) => setAnswers({...answers, risk, decline_reaction: risk === "move_to_safety" ? "sell" : risk === "invest_more" ? "buy_more" : "hold"})} /><label className="selectLabel">Sustainability trade-off<select value={answers.tradeoff} onChange={(event) => setAnswers({...answers, tradeoff: event.target.value})}><option value="none">No expected-return trade-off</option><option value="small">Small trade-off</option><option value="moderate">Moderate trade-off</option><option value="strong">Strong trade-off</option></select></label></>}
-              {step === 6 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min={MIN_AMOUNT} max={MAX_AMOUNT} step="1" value={answers.amount} onChange={(event) => setAnswers({...answers, amount: clampAmount(Number(event.target.value) || MIN_AMOUNT)})} /></div><input className="range" type="range" min="0" max={AMOUNT_SLIDER_STEPS} step="1" value={amountToSliderPosition(answers.amount)} onChange={(event) => setAnswers({...answers, amount: sliderPositionToAmount(Number(event.target.value))})} /><small>${MIN_AMOUNT.toLocaleString()} minimum <span>${MAX_AMOUNT.toLocaleString()} maximum</span></small></div>}
+              {step === 3 && <OptionList value={answers.asset_preference} options={[["both","Stocks and ETFs"],["stocks_only","Individual stocks only"],["etfs_only","ETFs only"]]} onChange={(asset_preference) => setAnswers({...answers, asset_preference})} />}
+              {step === 4 && <OptionList value={answers.size_style} options={[["established","Stick with big, established names"],["smaller_growth","Include some smaller, up-and-coming ones too"],["mix","A mix of both"]]} onChange={(size_style) => setAnswers({...answers, size_style})} />}
+              {step === 5 && <OptionList value={answers.goal} options={[["long_term_growth","Long-term growth"],["growth_and_stability","Growth and stability"],["income_and_preservation","Income and preservation"]]} onChange={(goal) => setAnswers({...answers, goal})} />}
+              {step === 6 && <><p className="selectLabel">When might you need this money?</p><OptionList value={answers.horizon} options={[["under_3_years","Under 3 years"],["3_to_10_years","3–10 years"],["10_plus_years","10+ years"]]} onChange={(horizon) => setAnswers({...answers, horizon})} /><p className="selectLabel">How would you handle a difficult year?</p><OptionList value={answers.risk} options={[["move_to_safety","Reduce risk after a decline"],["stay_invested","Stay invested"],["invest_more","Invest more at lower prices"]]} onChange={(risk) => setAnswers({...answers, risk, decline_reaction: risk === "move_to_safety" ? "sell" : risk === "invest_more" ? "buy_more" : "hold"})} /><label className="selectLabel">Sustainability trade-off<select value={answers.tradeoff} onChange={(event) => setAnswers({...answers, tradeoff: event.target.value})}><option value="none">No expected-return trade-off</option><option value="small">Small trade-off</option><option value="moderate">Moderate trade-off</option><option value="strong">Strong trade-off</option></select></label></>}
+              {step === 7 && <div className="amountCard"><label htmlFor="amount">Investment amount</label><div><span>$</span><input id="amount" type="number" min={MIN_AMOUNT} max={MAX_AMOUNT} step="1" value={answers.amount} onChange={(event) => setAnswers({...answers, amount: clampAmount(Number(event.target.value) || MIN_AMOUNT)})} /></div><input className="range" type="range" min="0" max={AMOUNT_SLIDER_STEPS} step="1" value={amountToSliderPosition(answers.amount)} onChange={(event) => setAnswers({...answers, amount: sliderPositionToAmount(Number(event.target.value))})} /><small>${MIN_AMOUNT.toLocaleString()} minimum <span>${MAX_AMOUNT.toLocaleString()} maximum</span></small></div>}
               {error && <p className="errorMessage" role="alert">{error}</p>}
               <div className="builderActions"><button className="backButton" disabled={step === 0} onClick={() => setStep((value) => value - 1)}>Back</button><button className="button" disabled={(step === 0 && answers.priorities.length === 0) || answers.amount < MIN_AMOUNT} onClick={() => step === steps.length - 1 ? generate() : setStep((value) => value + 1)}>{step === steps.length - 1 ? "Create my portfolio" : "Continue"} <span>→</span></button></div>
             </>}

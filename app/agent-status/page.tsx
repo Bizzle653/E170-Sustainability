@@ -25,7 +25,7 @@ type AgentStatus = {
   } | null;
 };
 
-export default function AgentStatusPage() {
+export function AgentStatusContent() {
   const [status, setStatus] = useState<AgentStatus | null>(null);
   const [error, setError] = useState("");
 
@@ -45,8 +45,7 @@ export default function AgentStatusPage() {
   }, []);
 
   return (
-    <main className="classificationPage">
-      <SiteNav />
+    <>
       <section className="classificationHero">
         <span className="eyebrow">Autonomous Agent operations</span>
         <h1>Classification coverage is measurable.</h1>
@@ -95,6 +94,15 @@ export default function AgentStatusPage() {
           </>
         )}
       </section>
+    </>
+  );
+}
+
+export default function AgentStatusPage() {
+  return (
+    <main className="classificationPage">
+      <SiteNav />
+      <AgentStatusContent />
     </main>
   );
 }
