@@ -1092,7 +1092,14 @@
       ],
       "exclusions": [],
       "fortune_rank": 13,
-      "rank": 113
+      "rank": 113,
+      "classification": {
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "last_checked_at": "2026-08-12T04:47:10.665388+00:00",
+        "confidence": 0.9,
+        "evidence_source_count": 3
+      }
     },
     {
       "ticker": "CAH",
