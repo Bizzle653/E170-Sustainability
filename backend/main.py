@@ -9,6 +9,7 @@ from backend.models import (
     CompanyAnalysisRequest,
     CompanyAnalysisResponse,
     CompanyResponse,
+    ClassificationUpdatesResponse,
     InvestorProfile,
     PortfolioAnalysisRequest,
     PortfolioAnalysisResponse,
@@ -18,12 +19,17 @@ from backend.models import (
     QuoteItem,
     QuoteRequest,
     QuoteResponse,
+    SecurityClassificationResponse,
     SparklineResponse,
     WatchlistResponse,
 )
 from backend.agent import run_agent
 from pydantic import BaseModel, Field
 from backend.services.investor_profile import build_profile
+from backend.services.classification_intelligence import (
+    load_classification_updates,
+    load_security_classification,
+)
 from backend.services.market_data import MarketDataError, MarketDataService
 from backend.services.portfolio import generate_portfolio, load_universe
 from backend.services.portfolio_review import analyze_portfolio
@@ -110,6 +116,20 @@ def search_universe(q: str = "", limit: int = 10) -> dict[str, object]:
         item["name"],
     ))
     return {"results": results[:limit]}
+
+
+@app.get("/api/classifications/updates", response_model=ClassificationUpdatesResponse)
+def classification_updates(limit: int = 50, ticker: str | None = None) -> dict[str, object]:
+    """Published, versioned changes made by the autonomous classification agent."""
+    return load_classification_updates(limit=limit, ticker=ticker)
+
+
+@app.get("/api/classifications/{ticker}", response_model=SecurityClassificationResponse)
+def security_classification(ticker: str) -> dict[str, object]:
+    result = load_security_classification(ticker)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Security is not in the Green Canopy universe")
+    return result
 
 
 @app.get("/api/company/{ticker}", response_model=CompanyResponse)

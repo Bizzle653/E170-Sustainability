@@ -274,3 +274,53 @@ class PortfolioResponse(BaseModel):
     warnings: list[str]
     limitations: list[str]
     excluded_investments: list[dict[str, str]]
+
+
+class ClassificationEvidenceResponse(BaseModel):
+    id: str
+    kind: str
+    title: str
+    source: str
+    retrieved_at: str
+    url: str | None = None
+    excerpt: str
+
+
+class ClassificationUpdateResponse(BaseModel):
+    id: str
+    ticker: str
+    name: str
+    asset_type: str
+    published_at: str
+    agent: str
+    model: str
+    old_tags: list[str]
+    new_tags: list[str]
+    added_tags: list[str]
+    removed_tags: list[str]
+    old_exclusions: list[str]
+    new_exclusions: list[str]
+    added_exclusions: list[str]
+    removed_exclusions: list[str]
+    summary: str
+    confidence: float = Field(ge=0, le=1)
+    accepted_assessments: list[dict[str, Any]] = Field(default_factory=list)
+    evidence: list[ClassificationEvidenceResponse] = Field(default_factory=list)
+    greenwashing_flags: list[str] = Field(default_factory=list)
+    portfolio_impact: str
+
+
+class ClassificationUpdatesResponse(BaseModel):
+    schema_version: int
+    updates: list[ClassificationUpdateResponse]
+
+
+class SecurityClassificationResponse(BaseModel):
+    universe_version: str
+    ticker: str
+    name: str
+    asset_type: str
+    tags: list[str]
+    exclusions: list[str]
+    classification: dict[str, Any] | None = None
+    history: list[ClassificationUpdateResponse] = Field(default_factory=list)

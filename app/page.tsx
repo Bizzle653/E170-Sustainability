@@ -151,7 +151,7 @@ export default function Home() {
     <main>
       <nav className="nav">
         <a className="brand" href="#"><span className="brandMark">⌁</span><span>Green Canopy</span></a>
-        <div className="navLinks"><a href="/learn">Learn</a><a href="/methodology">Methodology</a></div>
+        <div className="navLinks"><a href="/learn">Learn</a><a href="/methodology">Methodology</a><a href="/classification-updates">AI label updates</a></div>
         <div className="navActions"><a className="backButton navButton" href="/review">Review my holdings</a>{user ? <a className="backButton navButton" href="/portfolio">My dashboard</a> : <a className="backButton navButton" href="/login">Sign in</a>}<button className="button buttonSmall" onClick={() => setBuilderOpen(true)}>Build your portfolio</button></div>
       </nav>
 

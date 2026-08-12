@@ -1,6 +1,6 @@
 # Green Canopy
 
-Green Canopy is a local educational sustainable-investing portfolio builder. A questionnaire becomes a deterministic investor profile, the FastAPI backend retrieves market and third-party ESG-risk data through `yfinance`, and a constrained SciPy optimizer produces a simulated diversified portfolio with transparent limitations.
+Green Canopy is an educational sustainable-investing portfolio builder. A questionnaire becomes a deterministic investor profile, the FastAPI backend retrieves market data through `yfinance`, and a constrained SciPy optimizer produces a simulated diversified portfolio with transparent limitations. An autonomous Sustainability Intelligence Agent researches and continuously updates Green Canopy's internal classification metadata without controlling portfolio weights or executing trades.
 
 It does not connect to a brokerage, execute trades, predict returns, or provide financial advice.
 
@@ -22,16 +22,19 @@ app/
   page.tsx                 Questionnaire and marketing site
   results/page.tsx         Separate portfolio results page
 backend/
+  classification_agent.py  Autonomous classification-agent CLI
   main.py                  FastAPI endpoints
   models.py                Pydantic request and response contracts
   services/
     investor_profile.py    Deterministic questionnaire scoring
     market_data.py         yfinance retrieval, metrics, and TTL caches
+    classification_intelligence.py Evidence collection, AI classification, versioning, and announcements
     sustainability.py      Transparent alignment calculation
     portfolio_optimizer.py SciPy optimization and exact rounding
     portfolio.py           Candidate screening and response assembly
   data/
     investment_universe.json
+    classification_updates.json
     import_fortune_universe.py
   tests/                   Offline mocked test suite
   requirements.txt
@@ -108,6 +111,8 @@ Additional direct frontend origins can be allowed with a comma-separated server-
 GREEN_CANOPY_ALLOWED_ORIGINS=https://example.com,https://preview.example.com
 ```
 
+For autonomous scheduled classification, add `DEEPSEEK_API_KEY` as a GitHub Actions repository secret as well. The workflow needs repository `contents: write` permission because accepted classifications and their public announcements are committed back to `main`.
+
 ## Tests and production build
 
 ```powershell
@@ -120,11 +125,15 @@ npm run build
 - `GET /api/health`
 - `GET /api/universe`
 - `GET /api/universe/search?q=microsoft`
+- `GET /api/classifications/updates`
+- `GET /api/classifications/{ticker}`
 - `GET /api/company/{ticker}`
 - `POST /api/company/analyze`
 - `POST /api/profile`
 - `POST /api/portfolio/generate`
 - `POST /api/portfolio/quotes`
+- `POST /api/portfolio/analyze`
+- `POST /api/chat`
 
 ## Portfolio dashboard
 
@@ -167,14 +176,49 @@ The DeepSeek chatbot can also call the internal `get_yfinance_data` function too
 
 The tool validates ticker syntax, restricts history parameters, caps returned rows, and includes the data source and UTC retrieval time in every response. It is an internal model tool exposed through `POST /api/chat`, not a separate public HTTP endpoint.
 
+## Autonomous Sustainability Intelligence Agent
+
+The repository includes an autonomous classification agent that maintains Green Canopy's sustainability tags and exclusion flags. It is separate from the chatbot and never chooses securities, changes portfolio weights, connects to a brokerage, or executes trades.
+
+For each selected company or ETF, the agent:
+
+1. retrieves the current company or fund profile through `yfinance`;
+2. retrieves Yahoo sustainability fields when available and ETF top holdings when Yahoo provides them;
+3. follows the official website from the market profile and looks for bounded sustainability, ESG, climate, impact, or annual-report evidence;
+4. extracts text from supported official HTML pages and PDFs;
+5. asks DeepSeek to assess every Green Canopy category using only the numbered evidence bundle;
+6. rejects unsupported sources, low-confidence changes, and changes without cited evidence;
+7. directly applies accepted additions or removals to `investment_universe.json`;
+8. versions the universe and publishes a detailed record to `classification_updates.json`.
+
+There is no manual approval step. The automatic-change threshold defaults to 80%. Evidence that does not clear the threshold leaves the current classification unchanged. Every applied change records the old and new labels, rationale, confidence, evidence, retrieval time, model, possible claim conflicts, and portfolio-impact limitation. Public announcements are available at `/classification-updates` and through the classification API.
+
+Run a dry research pass locally:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.classification_agent --tickers MSFT,ICLN
+```
+
+Apply changes and publish announcements into the local data files:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.classification_agent --tickers MSFT,ICLN --apply
+```
+
+`.github/workflows/sustainability-intelligence-agent.yml` runs the same agent daily in bounded batches and commits durable classification metadata back to the repository. It can also be run manually with specific tickers from the GitHub Actions page.
+
+The official-site collector rejects non-public network destinations, follows a bounded number of redirects and documents, caps response sizes, and treats retrieval failures as unavailable evidence rather than inventing a result. A label remains Green Canopy classification metadata—not a third-party ESG rating—even after the AI agent updates it.
+
 ## Sustainability-data limitations
 
-Yahoo discontinued its free ESG/sustainability API endpoint (it now returns HTTP 404 for every ticker), so third-party ESG data is currently unavailable across the board. The scoring code still supports it if Yahoo restores the endpoint, but alignment scores today are driven entirely by Green Canopy's own classification tags. Missing sustainability values are never replaced with zero or fabricated scores.
+Yahoo discontinued its free ESG/sustainability API endpoint (it now returns HTTP 404 for every ticker), so those third-party ESG fields are currently unavailable across the board. The scoring code still supports them if Yahoo restores the endpoint. Alignment scores are otherwise driven by Green Canopy's own versioned classification tags, including evidence-backed updates made by the Sustainability Intelligence Agent. Missing sustainability values are never replaced with zero or fabricated scores.
 
 Stock candidates are no longer excluded for lacking Yahoo sustainability data — since that data is universally unavailable right now, requiring it would have silently removed all 955 individual stocks from consideration, leaving only ETFs.
 
-Category tags in `investment_universe.json` are Green Canopy classification metadata, not third-party ESG facts. Historical performance is descriptive and does not guarantee future results.
+Category tags in `investment_universe.json` are Green Canopy classification metadata, not third-party ESG facts. Agent confidence measures whether the supplied evidence supports a metadata change; it is not an ESG score or an assurance that a company is sustainable. Historical performance is descriptive and does not guarantee future results.
 
 ## Appropriate use of generative AI
 
-The current investment selection and allocation are deterministic; no language model chooses securities or invents sustainability evidence. A future generative-AI layer could explain the completed structured result in more accessible language, answer questions about why holdings were selected, or summarize trade-offs. It should receive only the calculated profile, allocations, metrics, and limitations, and it must never replace the optimizer, create missing ESG values, or present generated text as financial advice.
+Investment selection and allocation remain deterministic; no language model chooses securities or sets portfolio weights. Generative AI is used for two bounded purposes: the explanatory chatbot and the autonomous classification agent's interpretation of retrieved evidence. The classification agent can change Green Canopy metadata, but it cannot invent sources: production changes require valid evidence IDs collected by the program and a configured confidence threshold. Every change is versioned and announced publicly.
+
+AI-generated classification can still be wrong or incomplete. Official company publications are self-reported, top-holdings coverage may be partial, reports may be stale, and a model can misinterpret legitimate evidence. The public change log makes those limitations inspectable and the Git history makes every classification change reversible. AI output must never be presented as financial advice, a third-party ESG rating, or a guarantee of future performance.

@@ -170,3 +170,57 @@ def test_market_sparkline_and_watchlist(monkeypatch):
     default_watchlist = client.get("/api/market/watchlist")
     assert default_watchlist.status_code == 200
     assert len(default_watchlist.json()["items"]) == len(main_module.DEFAULT_WATCHLIST)
+
+
+def test_classification_announcement_and_security_endpoints(monkeypatch):
+    update = {
+        "id": "update-1",
+        "ticker": "MSFT",
+        "name": "Microsoft",
+        "asset_type": "stock",
+        "published_at": "2026-08-11T00:00:00+00:00",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "old_tags": [],
+        "new_tags": ["climate"],
+        "added_tags": ["climate"],
+        "removed_tags": [],
+        "old_exclusions": [],
+        "new_exclusions": [],
+        "added_exclusions": [],
+        "removed_exclusions": [],
+        "summary": "Evidence-backed update.",
+        "confidence": 0.9,
+        "accepted_assessments": [],
+        "evidence": [],
+        "greenwashing_flags": [],
+        "portfolio_impact": "Scores may change; allocations do not.",
+    }
+    monkeypatch.setattr(
+        main_module,
+        "load_classification_updates",
+        lambda limit=50, ticker=None: {"schema_version": 1, "updates": [update]},
+    )
+    monkeypatch.setattr(
+        main_module,
+        "load_security_classification",
+        lambda ticker: {
+            "universe_version": "2026-08-11",
+            "ticker": ticker.upper(),
+            "name": "Microsoft",
+            "asset_type": "stock",
+            "tags": ["climate"],
+            "exclusions": [],
+            "classification": {"confidence": 0.9},
+            "history": [update],
+        },
+    )
+    client = TestClient(main_module.app)
+
+    announcements = client.get("/api/classifications/updates")
+    assert announcements.status_code == 200
+    assert announcements.json()["updates"][0]["added_tags"] == ["climate"]
+
+    classification = client.get("/api/classifications/msft")
+    assert classification.status_code == 200
+    assert classification.json()["ticker"] == "MSFT"

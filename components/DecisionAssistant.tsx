@@ -92,7 +92,6 @@ function buildReply(input: string, context: ProfileContext | null, portfolio: Po
   const largestHolding = portfolio?.allocations?.[0];
   const concentration = largestHolding ? largestHolding.weight : 0;
   const alignmentScore = portfolio?.sustainability_alignment_score ?? 0;
-  const volatility = portfolio?.annualized_volatility ?? 0;
 
   if (/risk|volatile|drawdown|fall|drop|market|panic/i.test(lower)) {
     return `Your profile points to ${riskProfile}. I would keep the plan steady unless you need the money before ${horizon}. If you are nervous about a sharp drop, focus on staying diversified, keeping the largest holding below ${Math.max(20, Math.round((context?.max_concentration ?? 0.2) * 100))}% of the portfolio, and reviewing whether your emergency needs changed. ${alignmentScore >= 70 ? "Your current alignment is strong, so the main adjustment is risk-control rather than a full reset." : "Because the portfolio is still relatively new, it is reasonable to trim the most concentrated position before making any larger changes."}`;
@@ -125,20 +124,23 @@ export function DecisionAssistant() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const storedContext = readStoredContext();
-    const storedPortfolio = readStoredPortfolio();
-    setContext(storedContext);
-    setPortfolio(storedPortfolio);
-    setMessages([
-      {
-        id: "welcome",
-        role: "assistant",
-        content: storedContext
-          ? `I’m your decision coach. I can help you interpret your profile and next steps for your portfolio. You selected ${storedContext.priorities.slice(0, 3).map((item) => PRIORITY_LABELS[item] ?? item).join(", ") || "your priorities"} and your horizon is ${storedContext.horizon === "10_plus_years" ? "10+ years" : storedContext.horizon === "3_to_10_years" ? "3-10 years" : "under 3 years"}.`
-          : "I’m your decision coach. I can help you interpret your portfolio and next steps. Create or review a portfolio and I’ll tailor the guidance.",
-      },
-    ]);
-    setReady(true);
+    const timer = window.setTimeout(() => {
+      const storedContext = readStoredContext();
+      const storedPortfolio = readStoredPortfolio();
+      setContext(storedContext);
+      setPortfolio(storedPortfolio);
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: storedContext
+            ? `I’m your decision coach. I can help you interpret your profile and next steps for your portfolio. You selected ${storedContext.priorities.slice(0, 3).map((item) => PRIORITY_LABELS[item] ?? item).join(", ") || "your priorities"} and your horizon is ${storedContext.horizon === "10_plus_years" ? "10+ years" : storedContext.horizon === "3_to_10_years" ? "3-10 years" : "under 3 years"}.`
+            : "I’m your decision coach. I can help you interpret your portfolio and next steps. Create or review a portfolio and I’ll tailor the guidance.",
+        },
+      ]);
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const summary = useMemo(() => {

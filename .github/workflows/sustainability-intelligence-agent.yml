@@ -1,0 +1,78 @@
+name: Sustainability Intelligence Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Optional comma-separated tickers; blank processes stale records"
+        required: false
+        type: string
+      limit:
+        description: "Maximum securities to research (1-25)"
+        required: true
+        default: "10"
+        type: string
+      stale_days:
+        description: "Revisit classifications after this many days"
+        required: true
+        default: "90"
+        type: string
+  schedule:
+    - cron: "17 14 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sustainability-intelligence-agent
+  cancel-in-progress: false
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install agent dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Research and apply classifications
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          INPUT_TICKERS: ${{ inputs.tickers }}
+          INPUT_LIMIT: ${{ inputs.limit }}
+          INPUT_STALE_DAYS: ${{ inputs.stale_days }}
+        shell: bash
+        run: |
+          test -n "$DEEPSEEK_API_KEY" || { echo "DEEPSEEK_API_KEY repository secret is required"; exit 1; }
+          limit="${INPUT_LIMIT:-10}"
+          stale_days="${INPUT_STALE_DAYS:-90}"
+          args=(--apply --limit "$limit" --stale-days "$stale_days")
+          if [ -n "$INPUT_TICKERS" ]; then
+            args+=(--tickers "$INPUT_TICKERS")
+          fi
+          python -m backend.classification_agent "${args[@]}"
+
+      - name: Publish classification metadata and announcements
+        shell: bash
+        run: |
+          git config user.name "green-canopy-agent[bot]"
+          git config user.email "green-canopy-agent[bot]@users.noreply.github.com"
+          git add backend/data/investment_universe.json backend/data/classification_updates.json
+          if git diff --cached --quiet; then
+            echo "No classification metadata changed."
+            exit 0
+          fi
+          git commit -m "Update autonomous sustainability classifications"
+          git pull --rebase origin main
+          git push origin HEAD:main

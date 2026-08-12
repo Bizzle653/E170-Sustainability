@@ -1,0 +1,156 @@
+import json
+from datetime import datetime, timezone
+
+from backend.services.classification_intelligence import (
+    ClassificationAssessment,
+    ClassificationDecision,
+    EvidenceSource,
+    SustainabilityIntelligenceAgent,
+    load_classification_updates,
+    load_security_classification,
+)
+
+
+class FakeMarket:
+    def get_info(self, symbol):
+        return {
+            "longName": "Example Energy",
+            "quoteType": "EQUITY",
+            "sector": "Energy",
+            "industry": "Renewable Power",
+            "longBusinessSummary": "Example Energy develops solar power and still operates a natural gas pipeline.",
+            "website": "https://example.com",
+        }
+
+    def get_sustainability(self, symbol):
+        return {}
+
+    def get_top_holdings(self, symbol, limit=25):
+        return []
+
+
+class FakeResearcher:
+    def collect(self, website):
+        return [EvidenceSource(
+            id="official-report",
+            kind="official_web",
+            title="Official report",
+            source="Official company website",
+            retrieved_at="2026-08-11T00:00:00+00:00",
+            content="Solar power is a material segment. The company also operates a natural gas pipeline.",
+            url=website,
+        )]
+
+
+class FakeProvider:
+    model_name = "fake-classifier"
+
+    def __init__(self, renewable_confidence=0.92):
+        self.renewable_confidence = renewable_confidence
+
+    def classify(self, security, evidence):
+        return ClassificationDecision(
+            summary="The cited operating-business evidence supports renewable energy and fossil-fuel exposure.",
+            tag_assessments=[
+                ClassificationAssessment(
+                    category="climate",
+                    action="remove",
+                    confidence=0.91,
+                    evidence_ids=["official-report"],
+                    rationale="The existing tag was supported by a generic claim rather than a measured climate activity.",
+                ),
+                ClassificationAssessment(
+                    category="renewable_energy",
+                    action="add",
+                    confidence=self.renewable_confidence,
+                    evidence_ids=["official-report"],
+                    rationale="Solar power is a material operating segment.",
+                ),
+            ],
+            exclusion_assessments=[ClassificationAssessment(
+                category="fossil_fuels",
+                action="add",
+                confidence=0.89,
+                evidence_ids=["official-report"],
+                rationale="The company operates a natural gas pipeline.",
+            )],
+            greenwashing_flags=["A renewable claim exists alongside fossil-fuel infrastructure."],
+        )
+
+
+def _write_universe(path):
+    path.write_text(json.dumps({
+        "version": "old-version",
+        "scope": {},
+        "securities": [{
+            "ticker": "TEST",
+            "name": "Example Energy",
+            "type": "stock",
+            "sector": "Energy",
+            "tags": ["climate"],
+            "exclusions": [],
+            "rank": 1,
+        }],
+    }), encoding="utf-8")
+
+
+def test_agent_applies_high_confidence_changes_and_publishes_announcement(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    updates_path = tmp_path / "updates.json"
+    _write_universe(universe_path)
+
+    fixed_now = datetime(2026, 8, 11, 12, 30, tzinfo=timezone.utc)
+    agent = SustainabilityIntelligenceAgent(
+        market_data=FakeMarket(),
+        decision_provider=FakeProvider(),
+        researcher=FakeResearcher(),
+        universe_path=universe_path,
+        updates_path=updates_path,
+        min_confidence=0.80,
+        now=lambda: fixed_now,
+    )
+    result = agent.run(tickers=["TEST"], apply=True)
+
+    assert result["changed"] == 1
+    stored = json.loads(universe_path.read_text(encoding="utf-8"))
+    security = stored["securities"][0]
+    assert security["tags"] == ["renewable_energy"]
+    assert security["exclusions"] == ["fossil_fuels"]
+    assert security["classification"]["agent"].startswith("Green Canopy")
+    assert stored["version"] == "2026-08-11T12:30:00Z"
+
+    updates = load_classification_updates(updates_path=updates_path)["updates"]
+    assert len(updates) == 1
+    assert updates[0]["added_tags"] == ["renewable_energy"]
+    assert updates[0]["removed_tags"] == ["climate"]
+    assert updates[0]["added_exclusions"] == ["fossil_fuels"]
+    assert updates[0]["evidence"][0]["id"] == "official-report"
+    assert updates[0]["greenwashing_flags"]
+
+    current = load_security_classification("test", universe_path, updates_path)
+    assert current["tags"] == ["renewable_energy"]
+    assert len(current["history"]) == 1
+
+
+def test_agent_does_not_apply_low_confidence_addition(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    updates_path = tmp_path / "updates.json"
+    _write_universe(universe_path)
+
+    agent = SustainabilityIntelligenceAgent(
+        market_data=FakeMarket(),
+        decision_provider=FakeProvider(renewable_confidence=0.60),
+        researcher=FakeResearcher(),
+        universe_path=universe_path,
+        updates_path=updates_path,
+        min_confidence=0.95,
+        now=lambda: datetime(2026, 8, 11, tzinfo=timezone.utc),
+    )
+    result = agent.run(tickers=["TEST"], apply=True)
+
+    assert result["changed"] == 0
+    stored = json.loads(universe_path.read_text(encoding="utf-8"))["securities"][0]
+    assert stored["tags"] == ["climate"]
+    assert stored["exclusions"] == []
+    assert stored["classification"]["confidence"] == 0.0
+    assert load_classification_updates(updates_path=updates_path)["updates"] == []

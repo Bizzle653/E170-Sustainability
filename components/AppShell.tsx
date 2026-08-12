@@ -10,6 +10,7 @@ const navigation = [
   {href: "/results", label: "Portfolio analysis", icon: "↗"},
   {href: "/", label: "Build another", icon: "+"},
   {href: "/chat", label: "AI Assistant", icon: "✦"},
+  {href: "/classification-updates", label: "AI label updates", icon: "◎"},
   {href: "/profile", label: "Profile", icon: "◉"},
   {href: "/settings", label: "Settings", icon: "⚙"},
 ];

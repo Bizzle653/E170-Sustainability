@@ -26,3 +26,32 @@
 .heroTicker{margin-top:30px;padding:16px 18px 14px;border-radius:18px;background:rgba(255,255,255,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.6);box-shadow:0 20px 50px rgba(8,55,38,.14);max-width:100%}.heroTickerTop{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:11px}.heroTickerLabel{display:block;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:var(--forest-2)}.heroTickerTop .heroTickerLabel{margin-bottom:0}.heroTickerRow{display:flex;gap:9px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.heroTickerRow::-webkit-scrollbar{display:none}.heroChip{flex:none;display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:11px;background:#fff;border:1px solid var(--line);transition:.15s}.heroChip:hover{transform:translateY(-1px);border-color:var(--forest-2);box-shadow:0 8px 18px rgba(8,55,38,.1)}.heroChip b{font-size:11px;font-weight:900;color:var(--ink)}.heroChip svg{display:block}.heroChip small{font-size:10px;font-weight:800;white-space:nowrap}
 .heroSearch{display:flex}.heroSearch input{width:210px;max-width:50vw;height:34px;border:1px solid var(--line);border-radius:10px 0 0 10px;padding:0 12px;font-size:11px;outline:0;background:#fff;color:var(--ink)}.heroSearch input:focus{border-color:var(--forest-2)}.heroSearch button{height:34px;border:0;border-radius:0 10px 10px 0;background:var(--forest);color:#fff;font-weight:800;font-size:11px;padding:0 14px}.heroSearch button:disabled{opacity:.5}.heroSearchResults{margin-bottom:12px;max-height:220px;overflow-y:auto}.heroSearchError{margin-bottom:10px;font-size:10px;padding:8px 10px}
 @media(max-width:600px){.heroTicker{padding:14px 14px 12px;margin-top:24px}.heroChip{height:34px;padding:0 10px}.heroSearch input{width:100%;max-width:none}.heroTickerTop{flex-direction:column;align-items:stretch}}
+
+/* Autonomous sustainability classification announcements */
+.classificationPage{min-height:100vh;background:var(--cream)}
+.classificationHero{padding:80px max(8vw,28px) 64px;background:var(--forest);color:#fff}
+.classificationHero h1{font-size:clamp(46px,6vw,78px);max-width:900px;margin:14px 0 20px}
+.classificationHero p{max-width:780px;color:#c5d9cf;font-size:15px;line-height:1.8}
+.classificationFeed{max-width:1040px;margin:auto;padding:52px max(5vw,24px) 100px;display:grid;gap:20px}
+.classificationEmpty{padding:42px;background:#fff;border:1px solid var(--line);border-radius:20px;color:var(--muted);text-align:center}
+.classificationEmpty strong{display:block;color:var(--ink);font-size:18px;margin-bottom:8px}
+.classificationNotice{padding:28px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 32px rgba(8,55,38,.05)}
+.classificationNotice>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.classificationNotice>header>div{display:flex;align-items:center;gap:13px}
+.classificationNotice>header strong,.classificationNotice>header small{display:block}
+.classificationNotice>header small{color:var(--muted);font-size:9px;margin-top:5px}
+.confidenceBadge{padding:7px 10px;border-radius:99px;background:var(--soft);color:var(--forest-2);font-size:9px;font-weight:900;white-space:nowrap}
+.classificationChanges{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 15px}
+.classificationChanges span{padding:7px 10px;border-radius:99px;font-size:10px;font-weight:900;text-transform:capitalize}
+.classificationChanges .added{color:#176546;background:#e7f5eb}.classificationChanges .removed{color:#8d3d35;background:#faece8}.classificationChanges .warning{color:#7a5200;background:#fff2cd}
+.classificationSummary{font-size:13px;line-height:1.7;color:#40564b}
+.classificationFlags{margin:18px 0;padding:16px;background:#fff6dc;border-radius:12px;color:#6e4d0a;font-size:11px;line-height:1.6}
+.classificationFlags ul{margin-bottom:0}
+.classificationNotice details{border-top:1px solid var(--line);margin-top:20px;padding-top:16px}
+.classificationNotice summary{cursor:pointer;color:var(--forest-2);font-size:10px;font-weight:900}
+.classificationEvidence{display:grid;gap:12px;margin-top:16px}
+.classificationEvidence>div{padding:15px;background:var(--soft);border-radius:12px}
+.classificationEvidence strong,.classificationEvidence small{display:block}.classificationEvidence small{font-size:9px;color:var(--muted);margin-top:4px}.classificationEvidence p{font-size:10px;line-height:1.55;color:#50635a;overflow-wrap:anywhere}
+.classificationImpact{padding:12px;border-left:3px solid var(--leaf);background:#f7faef}
+.portfolioAffected{padding:13px 15px;border-left:3px solid var(--leaf);border-radius:0 10px 10px 0;background:#eef6e6;color:var(--forest-2);font-size:11px;font-weight:750;line-height:1.55}
+@media(max-width:700px){.classificationNotice>header{flex-direction:column}.classificationHero{padding-top:52px}.classificationNotice{padding:21px}}
