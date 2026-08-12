@@ -78,6 +78,39 @@ class FakeProvider:
         )
 
 
+def test_decision_accepts_category_keyed_assessment_objects():
+    decision = ClassificationDecision.model_validate({
+        "summary": "Structured model result.",
+        "tag_assessments": {
+            "climate": {
+                "action": "keep",
+                "confidence": 0.88,
+                "evidence_ids": ["market-profile"],
+                "rationale": "The cited evidence supports the current category.",
+            },
+            "clean_water": {
+                "category": "clean_water",
+                "action": "insufficient",
+                "confidence": 0.25,
+                "evidence_ids": [],
+                "rationale": "No material water evidence was supplied.",
+            },
+        },
+        "exclusion_assessments": {
+            "fossil_fuels": {
+                "action": "remove",
+                "confidence": 0.91,
+                "evidence_ids": ["official-report"],
+                "rationale": "The cited evidence no longer supports the exclusion.",
+            },
+        },
+        "greenwashing_flags": [],
+    })
+
+    assert [item.category for item in decision.tag_assessments] == ["climate", "clean_water"]
+    assert decision.exclusion_assessments[0].category == "fossil_fuels"
+
+
 def _write_universe(path):
     path.write_text(json.dumps({
         "version": "old-version",

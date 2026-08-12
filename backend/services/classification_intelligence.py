@@ -15,7 +15,7 @@ from uuid import uuid4
 
 import httpx
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from backend.services.market_data import MarketDataError, MarketDataService
 
@@ -91,6 +91,33 @@ class ClassificationDecision(BaseModel):
     tag_assessments: list[ClassificationAssessment]
     exclusion_assessments: list[ClassificationAssessment] = Field(default_factory=list)
     greenwashing_flags: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_assessment_collections(cls, value: Any) -> Any:
+        """Accept both JSON arrays and category-keyed objects from the model.
+
+        DeepSeek occasionally follows the semantic schema but chooses
+        ``{"climate": {...}}`` instead of ``[{"category": "climate", ...}]``.
+        Normalising that harmless shape difference keeps evidence validation and
+        the automatic-change threshold in one deterministic code path.
+        """
+        if not isinstance(value, dict):
+            return value
+        normalized = dict(value)
+        for field_name in ("tag_assessments", "exclusion_assessments"):
+            collection = normalized.get(field_name)
+            if not isinstance(collection, dict):
+                continue
+            items = []
+            for category, assessment in collection.items():
+                if not isinstance(assessment, dict):
+                    continue
+                item = dict(assessment)
+                item.setdefault("category", category)
+                items.append(item)
+            normalized[field_name] = items
+        return normalized
 
 
 class DecisionProvider(Protocol):
