@@ -4,6 +4,19 @@ Green Canopy is an educational sustainable-investing portfolio builder. A questi
 
 It does not connect to a brokerage, execute trades, predict returns, or provide financial advice.
 
+## How this project was built with AI
+
+This is distinct from the section below on how Green Canopy *uses* generative AI as a product feature — this is about how the team built the codebase itself.
+
+A meaningful share of this project's engineering was done in direct collaboration with Claude (Anthropic's AI coding assistant), working as a pair-programmer inside the actual codebase rather than generating isolated snippets. Concretely, in one extended session Claude:
+
+- Diagnosed a real portfolio-concentration bug reported by a teammate (several sector-diverse-looking ETFs turning out to hold nearly identical top constituents), and implemented a correlation-based concentration cap in the optimizer to catch it — then, when a first version of that fix caused solver instability on real market data, diagnosed *why* and revised the approach, rather than shipping the first attempt untested.
+- Added two new questionnaire inputs (asset type preference, company size/style preference), including calibrating how strongly the size/style preference should influence results against real scored output from the live universe, not just synthetic test data.
+- Consolidated three inconsistent site navigation implementations into one, and merged four overlapping "how it works" pages into a single tabbed page, without breaking existing test coverage.
+- Diagnosed and worked around real local-environment issues encountered along the way (a stuck Windows network socket, a stale dev-server cache silently serving outdated code, a naming collision with a similarly-named sibling project directory).
+
+The team directed priorities, made the product and design decisions (what to build, what to defer, what tradeoffs to accept), and reviewed the results; Claude implemented, tested against live data where possible, and flagged limitations and open questions rather than presenting best-guess work as finished. Git history on `main` shows the AI-assisted commits distinctly (co-authored by Claude) alongside human-authored commits.
+
 ## Investment universe
 
 The bundled universe contains:
