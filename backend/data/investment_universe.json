@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-12T15:16:39Z",
+  "version": "2026-08-13T15:17:51Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -422,7 +422,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 41
+      "rank": 41,
+      "exclusions": []
     },
     {
       "ticker": "IXUS",
@@ -431,7 +432,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 42
+      "rank": 42,
+      "exclusions": []
     },
     {
       "ticker": "XLF",
@@ -440,7 +442,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 43
+      "rank": 43,
+      "exclusions": []
     },
     {
       "ticker": "IBIT",
@@ -457,7 +460,8 @@
         "climate",
         "governance"
       ],
-      "rank": 45
+      "rank": 45,
+      "exclusions": []
     },
     {
       "ticker": "IVE",
@@ -466,17 +470,31 @@
       "tags": [
         "governance"
       ],
-      "rank": 46
+      "rank": 46,
+      "exclusions": []
     },
     {
       "ticker": "QUAL",
       "type": "etf",
       "sector": "Quality Equity",
       "tags": [
-        "governance",
-        "fair_labor"
+        "fair_labor",
+        "governance"
       ],
-      "rank": 47
+      "rank": 47,
+      "exclusions": [],
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-13T15:15:55.572039+00:00",
+        "last_changed_at": "2026-08-13T15:15:55.572039+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "IWR",
@@ -485,7 +503,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 48
+      "rank": 48,
+      "exclusions": []
     },
     {
       "ticker": "VV",
@@ -503,7 +522,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 50
+      "rank": 50,
+      "exclusions": []
     },
     {
       "ticker": "IWB",
@@ -512,7 +532,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 51
+      "rank": 51,
+      "exclusions": []
     },
     {
       "ticker": "SMH",
@@ -522,7 +543,8 @@
         "climate",
         "circular_economy"
       ],
-      "rank": 52
+      "rank": 52,
+      "exclusions": []
     },
     {
       "ticker": "DIA",
@@ -531,7 +553,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 53
+      "rank": 53,
+      "exclusions": []
     },
     {
       "ticker": "SLV",
@@ -548,7 +571,8 @@
         "climate",
         "governance"
       ],
-      "rank": 55
+      "rank": 55,
+      "exclusions": []
     },
     {
       "ticker": "TLT",
@@ -557,7 +581,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 56
+      "rank": 56,
+      "exclusions": []
     },
     {
       "ticker": "JEPI",
@@ -566,7 +591,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 57
+      "rank": 57,
+      "exclusions": []
     },
     {
       "ticker": "BSV",
@@ -575,7 +601,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 58
+      "rank": 58,
+      "exclusions": []
     },
     {
       "ticker": "BIL",
@@ -584,7 +611,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 59
+      "rank": 59,
+      "exclusions": []
     },
     {
       "ticker": "MUB",
@@ -594,7 +622,8 @@
         "clean_water",
         "governance"
       ],
-      "rank": 60
+      "rank": 60,
+      "exclusions": []
     },
     {
       "ticker": "DFAC",
@@ -603,7 +632,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 61
+      "rank": 61,
+      "exclusions": []
     },
     {
       "ticker": "VTEB",
@@ -613,7 +643,8 @@
         "clean_water",
         "governance"
       ],
-      "rank": 62
+      "rank": 62,
+      "exclusions": []
     },
     {
       "ticker": "XLV",
