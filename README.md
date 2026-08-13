@@ -8,14 +8,12 @@ It does not connect to a brokerage, execute trades, predict returns, or provide 
 
 This is distinct from the section below on how Green Canopy *uses* generative AI as a product feature — this is about how the team built the codebase itself.
 
-A meaningful share of this project's engineering was done in direct collaboration with Claude (Anthropic's AI coding assistant), working as a pair-programmer inside the actual codebase rather than generating isolated snippets. Concretely, in one extended session Claude:
+The team used AI coding assistants throughout development, across two tools and multiple sessions — verifiable directly in the git history via `Co-Authored-By` trailers, not just asserted here:
 
-- Diagnosed a real portfolio-concentration bug reported by a teammate (several sector-diverse-looking ETFs turning out to hold nearly identical top constituents), and implemented a correlation-based concentration cap in the optimizer to catch it — then, when a first version of that fix caused solver instability on real market data, diagnosed *why* and revised the approach, rather than shipping the first attempt untested.
-- Added two new questionnaire inputs (asset type preference, company size/style preference), including calibrating how strongly the size/style preference should influence results against real scored output from the live universe, not just synthetic test data.
-- Consolidated three inconsistent site navigation implementations into one, and merged four overlapping "how it works" pages into a single tabbed page, without breaking existing test coverage.
-- Diagnosed and worked around real local-environment issues encountered along the way (a stuck Windows network socket, a stale dev-server cache silently serving outdated code, a naming collision with a similarly-named sibling project directory).
+- **Cursor** built the original project foundation: the initial MVP, the FastAPI portfolio engine, Supabase authentication, and the Vercel deployment setup.
+- **Claude** was used iteratively across many later sessions for feature work and fixes: landing page copy, live market data integration, an earlier fix for portfolio over-concentration, the classification/evidence system, the methodology and transparency pages, and — in the most recent session — a deeper correlation-based concentration fix (the earlier fund-dedup approach caught same-index duplicates but missed differently-labeled funds secretly holding the same top companies), two new questionnaire inputs calibrated against live scored output, and the consolidation of three inconsistent navigation implementations into one. That same session was also used to audit the actual codebase — checking what the code really does rather than relying on memory — and compile the results into this README, replacing sections that had drifted out of sync with what's actually there.
 
-The team directed priorities, made the product and design decisions (what to build, what to defer, what tradeoffs to accept), and reviewed the results; Claude implemented, tested against live data where possible, and flagged limitations and open questions rather than presenting best-guess work as finished. Git history on `main` shows the AI-assisted commits distinctly (co-authored by Claude) alongside human-authored commits.
+In every case the team directed priorities and made the product decisions; the AI implemented them, and — in the session with the most direct visibility into this — tested its changes against live data and iterated when a first attempt didn't hold up, rather than shipping best-guess work as finished.
 
 ## Investment universe
 
