@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-13T15:17:51Z",
+  "version": "2026-08-14T15:10:36Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -663,7 +663,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 64
+      "rank": 64,
+      "exclusions": []
     },
     {
       "ticker": "VGIT",
@@ -672,7 +673,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 65
+      "rank": 65,
+      "exclusions": []
     },
     {
       "ticker": "MBB",
@@ -681,7 +683,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 66
+      "rank": 66,
+      "exclusions": []
     },
     {
       "ticker": "SCHB",
@@ -690,7 +693,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 67
+      "rank": 67,
+      "exclusions": []
     },
     {
       "ticker": "DGRO",
@@ -699,7 +703,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 68
+      "rank": 68,
+      "exclusions": []
     },
     {
       "ticker": "SPDW",
@@ -708,7 +713,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 69
+      "rank": 69,
+      "exclusions": []
     },
     {
       "ticker": "VONG",
@@ -718,7 +724,8 @@
         "climate",
         "governance"
       ],
-      "rank": 70
+      "rank": 70,
+      "exclusions": []
     },
     {
       "ticker": "XLE",
@@ -728,7 +735,19 @@
       "exclusions": [
         "fossil_fuels"
       ],
-      "rank": 71
+      "rank": 71,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-14T15:08:32.146068+00:00",
+        "last_changed_at": null,
+        "confidence": 0.95,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "JPST",
@@ -737,7 +756,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 72
+      "rank": 72,
+      "exclusions": []
     },
     {
       "ticker": "VNQ",
@@ -746,7 +766,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 73
+      "rank": 73,
+      "exclusions": []
     },
     {
       "ticker": "GOVT",
@@ -755,7 +776,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 74
+      "rank": 74,
+      "exclusions": []
     },
     {
       "ticker": "IUSB",
@@ -764,7 +786,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 75
+      "rank": 75,
+      "exclusions": []
     },
     {
       "ticker": "VBR",
@@ -773,7 +796,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 76
+      "rank": 76,
+      "exclusions": []
     },
     {
       "ticker": "JEPQ",
@@ -782,7 +806,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 77
+      "rank": 77,
+      "exclusions": []
     },
     {
       "ticker": "GDX",
@@ -798,7 +823,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 79
+      "rank": 79,
+      "exclusions": []
     },
     {
       "ticker": "DYNF",
@@ -807,7 +833,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 80
+      "rank": 80,
+      "exclusions": []
     },
     {
       "ticker": "GLDM",
@@ -823,7 +850,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 82
+      "rank": 82,
+      "exclusions": []
     },
     {
       "ticker": "EFV",
@@ -832,7 +860,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 83
+      "rank": 83,
+      "exclusions": []
     },
     {
       "ticker": "CGDV",

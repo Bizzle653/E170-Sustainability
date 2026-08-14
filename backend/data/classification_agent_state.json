@@ -325,8 +325,8 @@
     },
     "VV": {
       "status": "failed",
-      "last_attempt_at": "2026-08-13T15:16:09.222617+00:00",
-      "failure_count": 1
+      "last_attempt_at": "2026-08-14T15:07:19.037993+00:00",
+      "failure_count": 2
     },
     "IEF": {
       "status": "succeeded",
@@ -411,24 +411,162 @@
       "changed": false,
       "confidence": 0.0,
       "evidence_source_count": 1
+    },
+    "XLV": {
+      "status": "failed",
+      "last_attempt_at": "2026-08-14T15:07:26.283677+00:00",
+      "failure_count": 1
+    },
+    "VCSH": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:07:36.696206+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
+    },
+    "VGIT": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:07:44.396189+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
+    },
+    "MBB": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:07:48.523672+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "SCHB": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:07:54.058378+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "DGRO": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:06.665354+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "SPDW": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:17.943304+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VONG": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:24.123349+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "XLE": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:32.146068+00:00",
+      "changed": false,
+      "confidence": 0.95,
+      "evidence_source_count": 2
+    },
+    "JPST": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:43.873859+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VNQ": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:08:49.603622+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "GOVT": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:05.016198+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 1
+    },
+    "IUSB": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:16.345361+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VBR": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:23.019276+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "JEPQ": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:36.589504+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "SPYV": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:44.743142+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "DYNF": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:09:58.587133+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "VGK": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:10:12.962074+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
+    },
+    "EFV": {
+      "status": "succeeded",
+      "last_checked_at": "2026-08-14T15:10:18.439467+00:00",
+      "changed": false,
+      "confidence": 0.0,
+      "evidence_source_count": 2
     }
   },
   "retry_queue": [
     {
-      "ticker": "VV",
+      "ticker": "XLV",
       "failure_count": 1,
-      "last_attempt_at": "2026-08-13T15:16:09.222617+00:00",
-      "next_retry_at": "2026-08-13T17:16:17.018860+00:00",
-      "last_error": "2 validation errors for ClassificationDecision\ntag_assessments.0.citations.1.quote\n  String should have at most 600 characters [type=string_too_long, input_value='{\"ticker\": \"NVDA\", \"name...\", \"weight\": 0.0186763}', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v"
+      "last_attempt_at": "2026-08-14T15:07:26.283677+00:00",
+      "next_retry_at": "2026-08-14T17:07:36.696164+00:00",
+      "last_error": "3 validation errors for ClassificationDecision\ntag_assessments.0.citations.1.quote\n  String should have at most 600 characters [type=string_too_long, input_value='[{\"ticker\": \"LLY\", \"name..., \"weight\": 0.0242675}]', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v"
+    },
+    {
+      "ticker": "VV",
+      "failure_count": 2,
+      "last_attempt_at": "2026-08-14T15:07:19.037993+00:00",
+      "next_retry_at": "2026-08-14T19:07:26.283637+00:00",
+      "last_error": "2 validation errors for ClassificationDecision\ntag_assessments.0.citations.1.quote\n  String should have at most 600 characters [type=string_too_long, input_value='[{\"ticker\": \"NVDA\", \"nam..., \"weight\": 0.0186763}]', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v"
     }
   ],
   "last_run": {
-    "started_at": "2026-08-13T15:14:55.706440+00:00",
-    "completed_at": "2026-08-13T15:17:51.658218+00:00",
+    "started_at": "2026-08-14T15:07:19.037979+00:00",
+    "completed_at": "2026-08-14T15:10:36.535628+00:00",
     "status": "partial",
     "selected": 20,
-    "succeeded": 19,
-    "changed": 1,
-    "failed": 1
+    "succeeded": 18,
+    "changed": 0,
+    "failed": 2
   }
 }
