@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-14T15:10:36Z",
+  "version": "2026-08-15T14:41:34Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -654,7 +654,8 @@
         "human_rights",
         "governance"
       ],
-      "rank": 63
+      "rank": 63,
+      "exclusions": []
     },
     {
       "ticker": "VCSH",
@@ -880,7 +881,8 @@
         "circular_economy",
         "governance"
       ],
-      "rank": 85
+      "rank": 85,
+      "exclusions": []
     },
     {
       "ticker": "MGK",
@@ -890,7 +892,8 @@
         "climate",
         "governance"
       ],
-      "rank": 86
+      "rank": 86,
+      "exclusions": []
     },
     {
       "ticker": "LQD",
@@ -899,7 +902,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 87
+      "rank": 87,
+      "exclusions": []
     },
     {
       "ticker": "OEF",
@@ -908,7 +912,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 88
+      "rank": 88,
+      "exclusions": []
     },
     {
       "ticker": "IDEV",
@@ -917,7 +922,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 89
+      "rank": 89,
+      "exclusions": []
     },
     {
       "ticker": "TQQQ",
@@ -933,7 +939,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 91
+      "rank": 91,
+      "exclusions": []
     },
     {
       "ticker": "EEM",
@@ -942,7 +949,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 92
+      "rank": 92,
+      "exclusions": []
     },
     {
       "ticker": "ACWI",
@@ -951,7 +959,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 93
+      "rank": 93,
+      "exclusions": []
     },
     {
       "ticker": "VGSH",
@@ -960,7 +969,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 94
+      "rank": 94,
+      "exclusions": []
     },
     {
       "ticker": "IUSG",
@@ -970,7 +980,8 @@
         "climate",
         "governance"
       ],
-      "rank": 95
+      "rank": 95,
+      "exclusions": []
     },
     {
       "ticker": "JAAA",
@@ -979,7 +990,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 96
+      "rank": 96,
+      "exclusions": []
     },
     {
       "ticker": "XLC",
@@ -988,7 +1000,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 97
+      "rank": 97,
+      "exclusions": []
     },
     {
       "ticker": "VXF",
@@ -997,7 +1010,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 98
+      "rank": 98,
+      "exclusions": []
     },
     {
       "ticker": "USHY",
@@ -1006,7 +1020,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 99
+      "rank": 99,
+      "exclusions": []
     },
     {
       "ticker": "MDY",
@@ -1039,12 +1054,24 @@
       "sector": "Retailing",
       "industry": "Internet Services and Retailing",
       "tags": [
-        "renewable_energy",
-        "climate"
+        "climate",
+        "renewable_energy"
       ],
       "exclusions": [],
       "fortune_rank": 2,
-      "rank": 102
+      "rank": 102,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-15T14:41:27.927351+00:00",
+        "last_changed_at": "2026-08-15T14:41:27.927351+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "AAPL",

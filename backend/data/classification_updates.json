@@ -2,6 +2,42 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "fcbc35ac-eb55-4925-8d71-ccc5408fe292",
+      "ticker": "AMZN",
+      "name": "Amazon",
+      "asset_type": "stock",
+      "published_at": "2026-08-15T14:41:27.927351+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "renewable_energy",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "renewable_energy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Amazon is a diversified retailer and cloud provider. The evidence bundle contains only a market profile and a homepage snippet, with no material evidence of renewable energy, climate, or other sustainability operations. The tags renewable_energy and climate are unsupported by the evidence and should be removed due to insufficient evidence.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "7b9fc782-b804-4e2a-8586-763a5421b7dc",
       "ticker": "QUAL",
       "name": "QUAL",
