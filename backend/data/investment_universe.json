@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-15T14:41:34Z",
+  "version": "2026-08-16T14:40:49Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -513,7 +513,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 49
+      "rank": 49,
+      "exclusions": []
     },
     {
       "ticker": "IEF",
@@ -1030,7 +1031,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 100
+      "rank": 100,
+      "exclusions": []
     },
     {
       "ticker": "WMT",
@@ -1149,13 +1151,25 @@
       "sector": "Technology",
       "industry": "Internet Services and Retailing",
       "tags": [
-        "renewable_energy",
         "climate",
+        "renewable_energy",
         "governance"
       ],
       "exclusions": [],
       "fortune_rank": 8,
-      "rank": 108
+      "rank": 108,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-16T14:39:31.706560+00:00",
+        "last_changed_at": "2026-08-16T14:39:31.706560+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "MCK",
@@ -1435,12 +1449,24 @@
       "sector": "Technology",
       "industry": "Internet Services and Retailing",
       "tags": [
-        "renewable_energy",
-        "climate"
+        "climate",
+        "renewable_energy"
       ],
       "exclusions": [],
       "fortune_rank": 30,
-      "rank": 130
+      "rank": 130,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-16T14:40:33.297107+00:00",
+        "last_changed_at": "2026-08-16T14:40:33.297107+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "VZ",
@@ -1545,7 +1571,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 40,
-      "rank": 140
+      "rank": 140,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-16T14:40:43.888003+00:00",
+        "last_changed_at": null,
+        "confidence": 0.95,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "MS",
