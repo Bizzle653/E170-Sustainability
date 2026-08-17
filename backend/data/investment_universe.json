@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-16T14:40:49Z",
+  "version": "2026-08-17T14:46:53Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -872,7 +872,8 @@
       "tags": [
         "governance"
       ],
-      "rank": 84
+      "rank": 84,
+      "exclusions": []
     },
     {
       "ticker": "XLI",
@@ -1877,12 +1878,24 @@
       "sector": "Industrials",
       "industry": "Construction and Farm Machinery",
       "tags": [
-        "sustainable_agriculture",
-        "clean_water"
+        "clean_water",
+        "sustainable_agriculture"
       ],
       "exclusions": [],
       "fortune_rank": 64,
-      "rank": 164
+      "rank": 164,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-17T14:46:27.256136+00:00",
+        "last_changed_at": "2026-08-17T14:46:27.256136+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 2
+      }
     },
     {
       "ticker": "NVDA",
@@ -2106,12 +2119,24 @@
       "sector": "Apparel",
       "industry": "Apparel",
       "tags": [
-        "circular_economy",
-        "fair_labor"
+        "fair_labor",
+        "circular_economy"
       ],
       "exclusions": [],
       "fortune_rank": 88,
-      "rank": 188
+      "rank": 188,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-17T14:46:43.497780+00:00",
+        "last_changed_at": "2026-08-17T14:46:43.497780+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "ORCL",

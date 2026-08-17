@@ -2,6 +2,78 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "eaf6d04a-515e-46f1-8ab5-c69e01f38c8d",
+      "ticker": "DE",
+      "name": "Deere",
+      "asset_type": "stock",
+      "published_at": "2026-08-17T14:46:27.256136+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "sustainable_agriculture",
+        "clean_water"
+      ],
+      "new_tags": [
+        "clean_water",
+        "sustainable_agriculture"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Deere is a manufacturer of agricultural, construction, and forestry equipment. The evidence bundle contains only a market profile and a homepage link, with no specific, measurable sustainability practices or outcomes. The tags 'sustainable_agriculture' and 'clean_water' are not supported by the evidence, which describes general business operations without quantifying environmental benefits. The fossil fuel exclusion is not applicable as the company's operations are not primarily in fossil fuel extraction or production.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
+      "id": "a1d24c45-a0e5-4038-8020-ccedbde3eb93",
+      "ticker": "NKE",
+      "name": "Nike",
+      "asset_type": "stock",
+      "published_at": "2026-08-17T14:46:43.497780+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "circular_economy",
+        "fair_labor"
+      ],
+      "new_tags": [
+        "fair_labor",
+        "circular_economy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Nike is a global athletic footwear and apparel company. The evidence bundle contains only a market profile with no specific sustainability claims or operational data. Therefore, all supported tags lack material evidence and are assessed as insufficient. No evidence of fossil fuel extraction or production exists, so the exclusion is not triggered.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "aaaea34a-8a1f-456b-b3b8-fcc68633e86e",
       "ticker": "GOOGL",
       "name": "Alphabet",
