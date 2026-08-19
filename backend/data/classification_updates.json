@@ -2,6 +2,145 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "54f86db7-f068-46a5-becb-b5a5c327c89a",
+      "ticker": "WM",
+      "name": "Waste Management",
+      "asset_type": "stock",
+      "published_at": "2026-08-19T14:54:21.605029+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "circular_economy",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "circular_economy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Waste Management's core business is waste collection, disposal, and recycling, with landfill gas-to-energy operations producing renewable energy. The evidence supports circular_economy and climate tags, but not renewable_energy as a material business segment. No evidence supports fair_labor, human_rights, biodiversity, clean_water, sustainable_agriculture, or governance. No fossil fuel extraction or production is indicated.",
+      "confidence": 0.9,
+      "accepted_assessments": [],
+      "evidence": [
+        {
+          "id": "market-profile",
+          "kind": "market_profile",
+          "title": "Yahoo Finance company or fund profile",
+          "source": "Yahoo Finance via yfinance",
+          "retrieved_at": "2026-08-19T14:54:21.605043+00:00",
+          "published_at": null,
+          "url": "https://www.wm.com",
+          "content_sha256": "f649319a7a88891ba3c27bd25d8013e3497a4bc484d91f4a6134f25afe91682a",
+          "quotes": [
+            "operates materials processing and commodities recycling services, including cardboard, paper, glass, metals, plastics, construction and demolition materials, and other recycling commodities are recovered for resale or redirected for other purposes",
+            "owns, develops, and operates landfill gas-to-energy facilities that produce renewable electricity and renewable natural gas"
+          ],
+          "excerpt": "operates materials processing and commodities recycling services, including cardboard, paper, glass, metals, plastics, construction and demolition materials, and other recycling commodities are recovered for resale or redirected for other purposes … owns, develops, and operates landfill gas-to-energy facilities that produce renewable electricity and renewable natural gas"
+        }
+      ],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
+      "id": "e9647bdc-105a-45ca-a930-f20a1e52b34d",
+      "ticker": "AEP",
+      "name": "American Electric Power",
+      "asset_type": "stock",
+      "published_at": "2026-08-19T14:54:36.542423+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "renewable_energy",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "renewable_energy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "American Electric Power is a diversified electric utility with material coal and natural gas generation, transmission, and distribution operations. The evidence shows a mix of fossil fuel and renewable generation, but no specific evidence of material renewable energy business, climate mitigation, or other sustainability categories. The fossil fuel exclusion is supported by explicit coal and natural gas generation.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
+      "id": "6e73c106-bec4-4c74-ac93-62a94a1b5f7b",
+      "ticker": "D",
+      "name": "Dominion Energy",
+      "asset_type": "stock",
+      "published_at": "2026-08-19T14:54:52.400906+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "renewable_energy",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "renewable_energy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Dominion Energy is a regulated utility with a material contracted renewable generation segment, supporting the renewable_energy and climate tags. No evidence supports fair_labor, human_rights, biodiversity, clean_water, sustainable_agriculture, circular_economy, or governance tags. The fossil_fuels exclusion is not triggered because the company's primary business is regulated electricity and gas distribution, not material fossil fuel extraction or production.",
+      "confidence": 0.8,
+      "accepted_assessments": [],
+      "evidence": [
+        {
+          "id": "market-profile",
+          "kind": "market_profile",
+          "title": "Yahoo Finance company or fund profile",
+          "source": "Yahoo Finance via yfinance",
+          "retrieved_at": "2026-08-19T14:54:52.400919+00:00",
+          "published_at": null,
+          "url": "https://www.dominionenergy.com",
+          "content_sha256": "6e129c0c48b5ddc5db7e3061e8a3611a82b687ed05ae1c9c7ab70e171fd0bd7e",
+          "quotes": [
+            "The Contracted Energy segment is involved in the nonregulated long-term contracted renewable electric generation fleet and renewable natural gas facilities."
+          ],
+          "excerpt": "The Contracted Energy segment is involved in the nonregulated long-term contracted renewable electric generation fleet and renewable natural gas facilities."
+        }
+      ],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "d6cc69f3-5736-4181-a936-fcc72e40450c",
       "ticker": "V",
       "name": "Visa",

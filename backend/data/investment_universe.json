@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-18T14:55:23Z",
+  "version": "2026-08-19T14:55:59Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -3442,12 +3442,24 @@
       "sector": "Business Services",
       "industry": "Waste Management",
       "tags": [
-        "circular_economy",
-        "climate"
+        "climate",
+        "circular_economy"
       ],
       "exclusions": [],
       "fortune_rank": 199,
-      "rank": 299
+      "rank": 299,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-19T14:54:21.605029+00:00",
+        "last_changed_at": "2026-08-19T14:54:21.605029+00:00",
+        "confidence": 0.9,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "LNG",
@@ -3624,12 +3636,24 @@
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
       "tags": [
-        "renewable_energy",
-        "climate"
+        "climate",
+        "renewable_energy"
       ],
       "exclusions": [],
       "fortune_rank": 217,
-      "rank": 317
+      "rank": 317,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-19T14:54:36.542423+00:00",
+        "last_changed_at": "2026-08-19T14:54:36.542423+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "IP",
@@ -3772,12 +3796,24 @@
       "sector": "Energy",
       "industry": "Utilities: Gas and Electric",
       "tags": [
-        "renewable_energy",
-        "climate"
+        "climate",
+        "renewable_energy"
       ],
       "exclusions": [],
       "fortune_rank": 230,
-      "rank": 330
+      "rank": 330,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-19T14:54:52.400906+00:00",
+        "last_changed_at": "2026-08-19T14:54:52.400906+00:00",
+        "confidence": 0.8,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "BLK",
@@ -4126,7 +4162,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 265,
-      "rank": 365
+      "rank": 365,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-19T14:55:12.422531+00:00",
+        "last_changed_at": null,
+        "confidence": 0.8,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "LDOS",
