@@ -2,6 +2,60 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "9cfaaf0e-2df9-4847-a587-7eafc01aafad",
+      "ticker": "EME",
+      "name": "EMCOR Group",
+      "asset_type": "stock",
+      "published_at": "2026-08-20T14:55:25.999993+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "clean_water",
+        "climate",
+        "renewable_energy"
+      ],
+      "new_tags": [
+        "climate",
+        "renewable_energy",
+        "clean_water"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "EMCOR Group is an engineering and construction company providing electrical and mechanical services, including water and wastewater treatment systems, renewable energy services, and energy solutions. The evidence supports the tags for clean_water, climate, and renewable_energy based on its business summary. No evidence contradicts the fossil_fuels exclusion.",
+      "confidence": 0.8,
+      "accepted_assessments": [],
+      "evidence": [
+        {
+          "id": "market-profile",
+          "kind": "market_profile",
+          "title": "Yahoo Finance company or fund profile",
+          "source": "Yahoo Finance via yfinance",
+          "retrieved_at": "2026-08-20T14:55:25.999996+00:00",
+          "published_at": null,
+          "url": "https://emcorgroup.com",
+          "content_sha256": "32c6dda38228d82bf0c888911580f2b4f4643cfd3f469bb1fd2c5c5b5673c4f2",
+          "quotes": [
+            "water and wastewater treatment systems",
+            "renewable energy services"
+          ],
+          "excerpt": "water and wastewater treatment systems … renewable energy services"
+        }
+      ],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "54f86db7-f068-46a5-becb-b5a5c327c89a",
       "ticker": "WM",
       "name": "Waste Management",
