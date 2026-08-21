@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-20T14:57:11Z",
+  "version": "2026-08-21T14:56:07Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -6581,7 +6581,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 486,
-      "rank": 586
+      "rank": 586,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-21T14:54:43.649910+00:00",
+        "last_changed_at": null,
+        "confidence": 0.95,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "VOYA",
@@ -6802,12 +6814,24 @@
       "sector": "Technology",
       "industry": "Information Technology Services",
       "tags": [
-        "circular_economy",
-        "climate"
+        "climate",
+        "circular_economy"
       ],
       "exclusions": [],
       "fortune_rank": 507,
-      "rank": 607
+      "rank": 607,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-21T14:55:03.599374+00:00",
+        "last_changed_at": "2026-08-21T14:55:03.599374+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "OPEN",
@@ -7962,7 +7986,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 612,
-      "rank": 712
+      "rank": 712,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-21T14:55:40.556729+00:00",
+        "last_changed_at": null,
+        "confidence": 0.8,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "HUBB",

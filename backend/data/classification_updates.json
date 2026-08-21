@@ -2,6 +2,42 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "d96430f6-c0c9-4774-b903-49cb883f7d6f",
+      "ticker": "KBR",
+      "name": "KBR",
+      "asset_type": "stock",
+      "published_at": "2026-08-21T14:55:03.599374+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "circular_economy",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "circular_economy"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "KBR's business summary explicitly describes circular process/circular economy solutions and climate-related services (decarbonization, net-zero carbon emission solutions, energy transition). However, the evidence is a single market profile with limited detail; it does not quantify materiality or provide operational specifics. The fossil fuel exclusion is not addressed by the evidence, so no exclusion is warranted.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "9cfaaf0e-2df9-4847-a587-7eafc01aafad",
       "ticker": "EME",
       "name": "EMCOR Group",
