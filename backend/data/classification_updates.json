@@ -2,6 +2,42 @@
   "schema_version": 1,
   "updates": [
     {
+      "id": "19b96fd2-12ad-4533-aabe-2689e5cdb615",
+      "ticker": "TTEK",
+      "name": "Tetra Tech",
+      "asset_type": "stock",
+      "published_at": "2026-08-22T14:39:08.116894+00:00",
+      "agent": "Green Canopy Sustainability Intelligence Agent",
+      "model": "deepseek-chat",
+      "policy_version": "2026-08-12.1",
+      "prompt_version": "classification-v2-exact-citations",
+      "verification": "independent_model_pass",
+      "old_tags": [
+        "clean_water",
+        "climate"
+      ],
+      "new_tags": [
+        "climate",
+        "clean_water"
+      ],
+      "added_tags": [],
+      "removed_tags": [],
+      "old_exclusions": [],
+      "new_exclusions": [],
+      "added_exclusions": [],
+      "removed_exclusions": [],
+      "summary": "Tetra Tech is an engineering and consulting firm with a stated focus on water, environment, and sustainable infrastructure. The evidence bundle contains only a market profile describing its business segments and services, which includes water management, environmental monitoring, and climate change consulting. However, the profile is a general business description and does not provide specific, measurable outcomes or material revenue breakdowns to substantiate the tags. The evidence is insufficient to confirm or refute the tags, so all supported tags are assessed as 'insufficient'. The fossil fuels exclusion is also assessed as 'insufficient' because the profile does not mention fossil fuel activities, but absence of evidence is not grounds for removal.",
+      "confidence": 0.0,
+      "accepted_assessments": [],
+      "evidence": [],
+      "greenwashing_flags": [],
+      "evidence_limitations": [
+        "Evidence is limited to retrievable market data, fund holdings, and issuer-controlled sources.",
+        "Exact quotes are program-verified, but the Agent's interpretation can still be wrong."
+      ],
+      "portfolio_impact": "Saved Green Canopy portfolios containing this security may show a different alignment score. Allocations are not changed automatically."
+    },
+    {
       "id": "d96430f6-c0c9-4774-b903-49cb883f7d6f",
       "ticker": "KBR",
       "name": "KBR",

@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-21T14:56:07Z",
+  "version": "2026-08-22T14:40:04Z",
   "scope": {
     "companies": "955 publicly traded companies with usable tickers from the 2024 Fortune 1000 dataset; private and untickered companies are retained by the source but cannot be queried through yfinance",
     "etfs": "100 largest U.S.-listed ETFs by assets at the recorded refresh date",
@@ -8727,12 +8727,24 @@
       "sector": "Engineering & Construction",
       "industry": "Engineering & Construction",
       "tags": [
-        "clean_water",
-        "climate"
+        "climate",
+        "clean_water"
       ],
       "exclusions": [],
       "fortune_rank": 684,
-      "rank": 784
+      "rank": 784,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-22T14:39:08.116894+00:00",
+        "last_changed_at": "2026-08-22T14:39:08.116894+00:00",
+        "confidence": 0.0,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "PSA",
@@ -9053,7 +9065,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 714,
-      "rank": 814
+      "rank": 814,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-22T14:39:17.454365+00:00",
+        "last_changed_at": null,
+        "confidence": 0.95,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "SIGI",
@@ -9645,7 +9669,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 768,
-      "rank": 868
+      "rank": 868,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-22T14:39:43.288690+00:00",
+        "last_changed_at": null,
+        "confidence": 0.85,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "TRU",
@@ -9969,7 +10005,19 @@
       ],
       "exclusions": [],
       "fortune_rank": 799,
-      "rank": 899
+      "rank": 899,
+      "classification": {
+        "status": "agent_verified",
+        "agent": "Green Canopy Sustainability Intelligence Agent",
+        "model": "deepseek-chat",
+        "policy_version": "2026-08-12.1",
+        "prompt_version": "classification-v2-exact-citations",
+        "verification": "independent_model_pass",
+        "verified_at": "2026-08-22T14:39:58.513991+00:00",
+        "last_changed_at": null,
+        "confidence": 0.9,
+        "evidence_source_count": 1
+      }
     },
     {
       "ticker": "MYRG",
